@@ -1,0 +1,59 @@
+\begin{definition}
+Let \(P\) be a \(d\)-dimensional polytope. The dual graph \(G_P^\ast\) is the graph whose vertices correspond to the facets of \(P\), with an edge between two vertices whenever the corresponding facets share a ridge.
+\end{definition}
+
+\begin{definition}
+A ridge unfolding candidate of \(P\) is represented by a spanning tree \(T\) of \(G_P^\ast\). The edges of \(T\) represent the facet adjacencies that are kept as hinges, while the remaining adjacencies are cut.
+\end{definition}
+
+\begin{definition}
+Two spanning-tree unfolding candidates \(T_1,T_2 \subseteq G_P^\ast\) are combinatorially equivalent if there exists an automorphism
+\[
+\varphi \in \operatorname{Aut}(G_P^\ast)
+\]
+such that
+\[
+\varphi(T_1)=T_2.
+\]
+\end{definition}
+
+\begin{lemma}
+Let \(P\) be a polytope and let \(G_P^\ast\) be its dual graph. Every combinatorial symmetry of \(P\) induces an automorphism of \(G_P^\ast\).
+\end{lemma}
+
+\begin{proof}
+A combinatorial symmetry of \(P\) is an incidence-preserving permutation of the faces of \(P\). In particular, it permutes the facets of \(P\). Since incidence is preserved, two facets share a ridge if and only if their images under the symmetry also share a ridge.
+
+Therefore, adjacency of facets is preserved. Hence the induced permutation on the vertices of \(G_P^\ast\) preserves edges. Thus it is an automorphism of the dual graph.
+\end{proof}
+
+\begin{lemma}
+Let \(T\) be a spanning tree of \(G_P^\ast\), and let
+\[
+\varphi \in \operatorname{Aut}(G_P^\ast).
+\]
+Then \(\varphi(T)\) is also a spanning tree of \(G_P^\ast\).
+\end{lemma}
+
+\begin{proof}
+Since \(\varphi\) is a graph automorphism, it is a bijection on the vertices and edges of \(G_P^\ast\). Therefore, it preserves connectedness and acyclicity. Because \(T\) is connected, acyclic, and contains all vertices of \(G_P^\ast\), its image \(\varphi(T)\) is also connected, acyclic, and contains all vertices. Hence \(\varphi(T)\) is a spanning tree.
+\end{proof}
+
+\begin{proposition}
+The automorphism group \(\operatorname{Aut}(G_P^\ast)\) acts on the set of spanning-tree unfolding candidates of \(P\).
+\end{proposition}
+
+\begin{proof}
+By the previous lemma, every automorphism of \(G_P^\ast\) maps spanning trees to spanning trees. The identity automorphism maps every spanning tree to itself, and composition of automorphisms is compatible with composition of their actions on spanning trees. Therefore, \(\operatorname{Aut}(G_P^\ast)\) defines a group action on the set of spanning trees of \(G_P^\ast\).
+\end{proof}
+
+\begin{corollary}
+The spanning-tree unfolding candidates of \(P\) are partitioned into equivalence classes under the action of \(\operatorname{Aut}(G_P^\ast)\). Each equivalence class represents one combinatorial unfolding type, up to symmetry of the dual graph.
+\end{corollary}
+
+For regular polytopes, the automorphism group of the dual graph naturally captures the symmetries of the polytope. Therefore, two spanning trees related by an automorphism of the dual graph describe the same unfolding candidate with differently labelled cells. In the implementation, we remove these duplicates by assigning each spanning tree a canonical representative under this group action.
+
+This equivalence is combinatorial. It identifies unfoldings whose cell-adjacency trees differ only by a symmetry of the dual graph. It does not, by itself, test whether two geometrically realized nets in \((d-1)\)-dimensional space are congruent.
+
+If we were to extend this to arbitrary polytope P and want to guarantee that all the unfoldings are unique, we need more information (namely geometry of the polytope). We would then need a new pipeline to be able to test congruency between two 3D shapes.
+In other words: dual graph trees→combinatorial representatives→geometric realization→geometric canonical form

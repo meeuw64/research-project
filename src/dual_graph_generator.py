@@ -19,6 +19,9 @@ def dual_graph_cube():
     G.remove_edges_from(opposites)
     return G
 
+def dual_graph_octahedron():
+    return nx.hypercube_graph(3)
+
 # 4D
 def dual_graph_tesseract():
     # dual graph of the n-cube can be formed (in this case n = 4)
@@ -33,5 +36,8 @@ def dual_graph_tesseract():
 
 def dual_graph_4_simplex():
     return nx.complete_graph(5)
+
+def dual_graph_4_orthoplex():
+    return nx.hypercube_graph(4) # tesseract is the dual of orthoplex
 
 # TODO orthoplex_4_dual_graph():

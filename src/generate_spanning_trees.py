@@ -25,11 +25,11 @@ def all_spanning_trees(G):
 # Generating all spanning trees:
 
 # Select polytope
-G = dual_graph_generator.dual_graph_tetrahedron()
+G = dual_graph_generator.dual_graph_4_orthoplex()
 
 trees = list(all_spanning_trees(G))
 
-output_path = DATA / "tetrahedron_trees.pkl"
+output_path = DATA / "4_orthoplex_trees.pkl"
 
 with open(output_path, "wb") as f:
     pickle.dump(trees, f)

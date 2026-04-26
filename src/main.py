@@ -1,36 +1,61 @@
 import networkx as nx
 import utils
-import numpy as np
-import matplotlib.pyplot as plt
-from collections import deque
+import dual_graph_generator
+
+
+def edge_key(u, v):
+    return tuple(sorted((u, v)))
+
+
+def canonical_form(T, automorphisms, edge_index):
+    """
+    Returns the canonical bitstring of T under all automorphisms
+    of the base graph.
+    """
+    best = None
+
+    for phi in automorphisms:
+        bits = [0] * len(edge_index)
+
+        for u, v in T.edges():
+            a, b = phi[u], phi[v]
+            e = edge_key(a, b)
+            bits[edge_index[e]] = 1
+
+        code = tuple(bits)
+
+        if best is None or code < best:
+            best = code
+
+    return best
 
 
 if __name__ == "__main__":
     trees = utils.load_spanning_trees("tesseract_trees.pkl")
 
-    trees = deque(trees)
+    # Original graph from which the spanning trees were generated
+    base_graph = dual_graph_generator.dual_graph_tesseract()
 
-    # Each bucket contains a list of graphs
-    # that are isomorphic to each other
-    isomorphic_buckets = []
+    edge_list = sorted(edge_key(u, v) for u, v in base_graph.edges())
+    edge_index = {e: i for i, e in enumerate(edge_list)}
 
-    while trees:
-        G = trees.popleft()
+    matcher = nx.algorithms.isomorphism.GraphMatcher(base_graph, base_graph)
+    automorphisms = list(matcher.isomorphisms_iter())
 
-        isomorphic_to_G = [G]
-        non_isomorphic_to_G = deque()
+    print(f"Number of automorphisms: {len(automorphisms)}")
+    print(f"Number of spanning trees: {len(trees)}")
 
-        while trees:
-            H = trees.popleft()
-            if nx.is_isomorphic(G, H):
-                isomorphic_to_G.append(H)
-            else:
-                non_isomorphic_to_G.append(H)
+    unique = {}
 
-        isomorphic_buckets.append(isomorphic_to_G)
-        trees = non_isomorphic_to_G
+    for i, T in enumerate(trees, start=1):
+        code = canonical_form(T, automorphisms, edge_index)
 
-        # Distinct unfoldings
+        if code not in unique:
+            unique[code] = T
 
-    print(len(isomorphic_buckets))
+        if i % 1000 == 0:
+            print(f"Processed {i}/{len(trees)} trees")
 
+    unique_trees = list(unique.values())
+
+    print(f"Number of unique unfoldings: {len(unique_trees)}")

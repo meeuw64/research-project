@@ -9,6 +9,18 @@ The main idea is to represent a 4-polytope by its dual graph, where:
 
 Spanning trees of the dual graph correspond to candidate unfolding structures. The problem then is to classify them into equivalent unfolding groups. So the final output of the algorithm is then all the distinct unfoldings.
 
+Idea for a pipeline:
+- Given some polytope P:
+- Generate 1-skeleton of dual polytope of P, call this graph DG (dual graph)
+- Compute automorphism graphs of DG (because automorphism graphs permute the vertices on the graph)
+- While enumerating all spanning trees T of DG:
+  * Compute canonical bitstring of T using automorphisms 
+  * Put T into hashmap using bitstring as key
+  * Every bucket in the hashmap will contain isomorphic graphs that all correspond to one particular unique unfolding
+- #buckets in hash map corresponds to the #unique unfoldings 
+
+- Future: Check for net overlap, so this algorithm works for arbitrary polytope P 
+
 ---
 
 ## Goals
@@ -65,15 +77,8 @@ Main libraries used:
 Run spanning tree generation:
 
 ```bash
-python src/generate_spanning_trees.py
+python src/generate_unfoldings --polytope_name
 ```
 
 ---
 
-## Current Focus
-
-* Tesseract dual graph
-* Enumeration of spanning trees
-* Symmetry reduction to distinct unfoldings
-
----
