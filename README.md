@@ -68,7 +68,6 @@ Main libraries used:
 * SciPy
 * NumPy
 * Matplotlib
-* SymPy
 
 ---
 
