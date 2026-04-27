@@ -45,3 +45,11 @@ def dual_graph_4_simplex():
 def dual_graph_4_orthoplex():
     return nx.hypercube_graph(4) # tesseract is the dual of orthoplex
 
+POLYTOPE_NAME_TO_DUAL_GRAPH = {
+    "tetrahedron": dual_graph_tetrahedron(),
+    "cube": dual_graph_cube(),
+    "octahedron": dual_graph_octahedron(),
+    "tesseract": dual_graph_tesseract(),
+    "4-simplex": dual_graph_4_simplex(),
+    "4-orthoplex": dual_graph_4_orthoplex()
+}
