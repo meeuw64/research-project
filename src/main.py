@@ -1,61 +1,44 @@
 import networkx as nx
-import utils
+import time
 import dual_graph_generator
+import symmetry_reduction
+from itertools import combinations
 
 
-def edge_key(u, v):
-    return tuple(sorted((u, v)))
+# Returns an iterator which enumerates all spanning trees of G
+def spanning_tree_iterator(G):
+    nodes = list(G.nodes)
+    edges = list(G.edges)
 
-
-def canonical_form(T, automorphisms, edge_index):
-    """
-    Returns the canonical bitstring of T under all automorphisms
-    of the base graph.
-    """
-    best = None
-
-    for phi in automorphisms:
-        bits = [0] * len(edge_index)
-
-        for u, v in T.edges():
-            a, b = phi[u], phi[v]
-            e = edge_key(a, b)
-            bits[edge_index[e]] = 1
-
-        code = tuple(bits)
-
-        if best is None or code < best:
-            best = code
-
-    return best
+    for subset in combinations(edges, len(nodes) - 1):
+        T = nx.Graph()
+        T.add_nodes_from(nodes)
+        T.add_edges_from(subset)
+        if nx.is_tree(T):
+            yield T
 
 
 if __name__ == "__main__":
-    trees = utils.load_spanning_trees("tesseract_trees.pkl")
+    start = time.perf_counter()
 
     # Original graph from which the spanning trees were generated
     base_graph = dual_graph_generator.dual_graph_tesseract()
 
-    edge_list = sorted(edge_key(u, v) for u, v in base_graph.edges())
-    edge_index = {e: i for i, e in enumerate(edge_list)}
-
-    matcher = nx.algorithms.isomorphism.GraphMatcher(base_graph, base_graph)
-    automorphisms = list(matcher.isomorphisms_iter())
+    automorphisms, edge_index = symmetry_reduction.compute_automorphisms(base_graph)
 
     print(f"Number of automorphisms: {len(automorphisms)}")
-    print(f"Number of spanning trees: {len(trees)}")
 
-    unique = {}
+    # Spanning trees
+    trees = spanning_tree_iterator(base_graph)
+    n_spanning_trees = int(nx.number_of_spanning_trees(base_graph))
 
-    for i, T in enumerate(trees, start=1):
-        code = canonical_form(T, automorphisms, edge_index)
+    print(f"Number of spanning trees: {n_spanning_trees}")
 
-        if code not in unique:
-            unique[code] = T
-
-        if i % 1000 == 0:
-            print(f"Processed {i}/{len(trees)} trees")
+    unique = symmetry_reduction.compute_unique_unfoldings(automorphisms, edge_index, trees, n_spanning_trees)
 
     unique_trees = list(unique.values())
 
+    end = time.perf_counter()
+    print("\r----------- RESULTS -----------\n", end="", flush=True)
+    print(f"Runtime: {end - start:.6f} seconds")
     print(f"Number of unique unfoldings: {len(unique_trees)}")
