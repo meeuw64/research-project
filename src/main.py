@@ -4,8 +4,6 @@ import argparse
 import pipeline
 
 
-
-
 if __name__ == "__main__":
     # --------------- PROGRAM ARGUMENTS ---------------
     parser = argparse.ArgumentParser()

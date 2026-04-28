@@ -11,15 +11,25 @@ Spanning trees of the dual graph correspond to candidate unfolding structures. T
 
 Idea for a pipeline:
 - Given some polytope P:
-- Generate 1-skeleton of dual polytope of P, call this graph DG (dual graph)
-- Compute automorphism graphs of DG (because automorphism graphs permute the vertices on the graph)
-- While enumerating all spanning trees T of DG:
-  * Compute canonical bitstring of T using automorphisms 
-  * Put T into hashmap using bitstring as key
-  * Every bucket in the hashmap will contain isomorphic graphs that all correspond to one particular unique unfolding
-- #buckets in hash map corresponds to the #unique unfoldings 
+- Generate 1-skeleton of dual polytope of P, call this graph G (dual graph)
+- Compute Aut(G), i.e. all automorphisms φ : V(G) → V(G) such that φ is a bijection and e(u, v) ⇔ e(φ(u), φ(v))
+- Label all edges in G as {e_1,e_2,e_3 ... e_n}
+- For each T ∈ τ(G):
+  * Compute minimum canonical bitstring of T under Aut(G)  
+  * Insert this bitstring into a Set O (two spanning trees T1, T2 will have the same bitstring iff T1 ~ T2 under Aut(G))
+  * Every element of this set O represents an orbit and thus a unique unfolding
+- |O| = #unique unfoldings
 
-- Future: Check for net overlap, so this algorithm works for arbitrary polytope P 
+Computing the canonical bitstring:
+- Given some tree T, Aut(G) and set of edge labeling E:
+- For each φ ∈ Aut(G):
+  - Apply φ to T (group action)
+  - Initialize bitstring b = 0000...0 (length |E|)
+  - For each e ∈ E: 
+    - b_i = 1 if e ∈ E(φ(T)) else 0
+- Return minimum b using lexicographical ordering
+
+Future: Check for net overlap, so this algorithm works for arbitrary polytope P 
 
 ---
 
