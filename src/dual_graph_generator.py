@@ -24,6 +24,24 @@ def dual_graph_cube():
 def dual_graph_octahedron():
     return nx.hypercube_graph(3)
 
+# Archimedean
+def dual_graph_truncated_tetrahedron():
+    hexagons = ["h1","h2", "h3", "h4"]
+    triangles = ["t1", "t2", "t3", "t4"]
+
+    # All hexagons connected
+    G = nx.complete_graph(hexagons)
+
+    # Add triangle nodes
+    G.add_nodes_from(triangles)
+
+    # Connect every triangle to every hexagon
+    G.add_edges_from((t, h) for t in triangles for h in hexagons)
+
+    # Remove the opposite hexagon from each triangle
+    G.remove_edges_from(zip(triangles, hexagons))
+
+    return G
 
 # 4D
 def dual_graph_tesseract():
@@ -49,6 +67,7 @@ POLYTOPE_NAME_TO_DUAL_GRAPH = {
     "tetrahedron": dual_graph_tetrahedron(),
     "cube": dual_graph_cube(),
     "octahedron": dual_graph_octahedron(),
+    "trunc-tetrahedron": dual_graph_truncated_tetrahedron(),
     "tesseract": dual_graph_tesseract(),
     "4-simplex": dual_graph_4_simplex(),
     "4-orthoplex": dual_graph_4_orthoplex()
