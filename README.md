@@ -21,11 +21,11 @@ Idea for a pipeline:
 - |O| = #unique unfoldings
 
 Computing the canonical bitstring:
-- Given some tree T, Aut(G) and set of edge labeling E:
+- Given some tree T, Aut(G) and set of edge labeling E(G):
 - For each φ ∈ Aut(G):
   - Apply φ to T (group action)
   - Initialize bitstring b = 0000...0 (length |E|)
-  - For each e ∈ E: 
+  - For each e ∈ E(G): 
     - b_i = 1 if e ∈ E(φ(T)) else 0
 - Return minimum b using lexicographical ordering
 
@@ -40,6 +40,7 @@ Future: Check for net overlap, so this algorithm works for arbitrary polytope P
 * Classify trees up to symmetry
 * Investigate distinct unfoldings
 * Explore computational methods for larger polytopes
+* General enough for d > 4 ? 
 
 ---
 
