@@ -26,10 +26,10 @@ def unique_unfoldings(polytope_name):
 
     # Spanning trees
     trees = spanning_tree_iterator(base_graph)
-    n_spanning_trees = int(nx.number_of_spanning_trees(base_graph))
+    n_spanning_trees = round(nx.number_of_spanning_trees(base_graph))
 
     print(f"Number of spanning trees: {n_spanning_trees}")
 
-    unique = symmetry_reduction.compute_unique_unfoldings(automorphisms, edge_index, trees, n_spanning_trees)
+    unique = symmetry_reduction.group_equivalent_unfoldings(automorphisms, edge_index, trees, n_spanning_trees)
 
     return unique

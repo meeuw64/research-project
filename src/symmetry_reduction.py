@@ -36,7 +36,7 @@ def compute_automorphisms(G):
     return list(matcher.isomorphisms_iter()), edge_index
 
 
-def compute_unique_unfoldings(automorphisms, edge_index, trees, n_spanning_trees):
+def group_equivalent_unfoldings(automorphisms, edge_index, trees, n_spanning_trees):
     unique = {}
 
     for i, T in enumerate(trees, start=1):

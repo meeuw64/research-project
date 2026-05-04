@@ -2,7 +2,8 @@ import time
 import dual_graph_generator
 import argparse
 import pipeline
-
+import utils
+from pathlib import Path
 
 if __name__ == "__main__":
     # --------------- PROGRAM ARGUMENTS ---------------
@@ -13,6 +14,15 @@ if __name__ == "__main__":
                         required=True,
                         choices=dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH.keys(),
                         help="Name of polytope to analyze")
+
+    default_path = utils.DATA / "spanning_trees.jsonl"
+    parser.add_argument(
+        "--save-trees",
+        nargs="?",
+        const=default_path,
+        metavar="PATH",
+        help=f"Save all spanning trees to PATH; defaults to {default_path}"
+    )
 
     args = parser.parse_args()
 
@@ -28,3 +38,8 @@ if __name__ == "__main__":
     print("\r----------- RESULTS -----------\n", end="", flush=True)
     print(f"Runtime: {end - start:.6f} seconds")
     print(f"Number of unique unfoldings: {len(unique_trees)}")
+
+    # --------------- WRITE RESULTS ---------------
+    if args.save_trees:
+        print(f"Writing spanning trees to: {args.save_trees}")
+        # WRITING LOGIC HERE

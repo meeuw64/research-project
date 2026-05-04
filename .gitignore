@@ -32,6 +32,3 @@ desktop.ini
 # Logs
 *.log
 
-# Generated research outputs
-data/*.pkl
-data/*.pickle

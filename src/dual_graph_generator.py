@@ -29,16 +29,16 @@ def dual_graph_truncated_tetrahedron():
     hexagons = ["h1","h2", "h3", "h4"]
     triangles = ["t1", "t2", "t3", "t4"]
 
-    # All hexagons connected
+    # all hexagons connected
     G = nx.complete_graph(hexagons)
 
-    # Add triangle nodes
+    # add triangle nodes
     G.add_nodes_from(triangles)
 
-    # Connect every triangle to every hexagon
+    # connect every triangle to every hexagon
     G.add_edges_from((t, h) for t in triangles for h in hexagons)
 
-    # Remove the opposite hexagon from each triangle
+    # remove the opposite hexagon from each triangle
     G.remove_edges_from(zip(triangles, hexagons))
 
     return G
