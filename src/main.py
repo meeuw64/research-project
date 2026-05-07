@@ -28,8 +28,7 @@ if __name__ == "__main__":
     # --------------- RUN PIPELINE ---------------
     start = time.perf_counter()
 
-    unique = pipeline.unique_unfoldings(args.polytope)
-    unique_trees = list(unique.values())
+    unique_trees = pipeline.unique_unfoldings(args.polytope)
 
     end = time.perf_counter()
 

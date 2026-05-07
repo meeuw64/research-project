@@ -1,26 +1,16 @@
 import networkx as nx
 
 
-def edge_key(u, v):
-    return tuple(sorted((u, v)))
+def canonical_form(E_t, edge_maps, edge_index):
+    tree_edge_indices = [edge_index[e] for e in E_t]
 
-
-def canonical_form(T, automorphisms, edge_index):
-    """
-    Returns the canonical bitstring of T under all automorphisms
-    of the base graph.
-    """
     best = None
 
-    for phi in automorphisms:
-        bits = [0] * len(edge_index)
+    for edge_map in edge_maps:
+        code = 0
 
-        for u, v in T.edges():
-            a, b = phi[u], phi[v]
-            e = edge_key(a, b)
-            bits[edge_index[e]] = 1
-
-        code = tuple(bits)
+        for idx in tree_edge_indices:
+            code |= 1 << edge_map[idx]
 
         if best is None or code < best:
             best = code
@@ -28,23 +18,42 @@ def canonical_form(T, automorphisms, edge_index):
     return best
 
 
-def compute_automorphisms(G):
-    edge_list = sorted(edge_key(u, v) for u, v in G.edges())
-    edge_index = {e: i for i, e in enumerate(edge_list)}
+# Returns a list of edge maps, where each edge map dictates how the edges get mapped under one of the automorphisms
+def compute_edge_automorphisms(G):
+    edge_index = {}
+
+    for i, (u, v) in enumerate(G.edges()):
+        edge_index[(u, v)] = i
+        edge_index[(v, u)] = i
 
     matcher = nx.algorithms.isomorphism.GraphMatcher(G, G)
-    return list(matcher.isomorphisms_iter()), edge_index
+
+    edge_maps = []
+
+    for phi in matcher.isomorphisms_iter():
+        edge_map = [0] * (len(edge_index) // 2)
+
+        for (u, v) in G.edges():
+            old_idx = edge_index[(u, v)]
+
+            a, b = phi[u], phi[v]
+            new_idx = edge_index[(a, b)]
+
+            edge_map[old_idx] = new_idx
+
+        edge_maps.append(edge_map)
+
+    return edge_maps, edge_index
 
 
-def group_equivalent_unfoldings(automorphisms, edge_index, trees, n_spanning_trees):
-    unique = {}
+def group_equivalent_unfoldings(edge_maps, edge_index, tree_edge_lists, n_spanning_trees):
+    unique = set()
 
-    for i, T in enumerate(trees, start=1):
-        code = canonical_form(T, automorphisms, edge_index)
+    for i, E_t in enumerate(tree_edge_lists, start=1):
+        code = canonical_form(E_t, edge_maps, edge_index)
+        unique.add(code)
 
-        if code not in unique:
-            unique[code] = T
-
-        print(f"\r{i / n_spanning_trees:.1%} done", end="", flush=True)
+        if i % 1000 == 0 or i == n_spanning_trees:
+            print(f"\r{i / n_spanning_trees:.1%} done", end="", flush=True)
 
     return unique
