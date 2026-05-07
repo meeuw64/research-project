@@ -2,17 +2,16 @@ import networkx as nx
 
 
 def canonical_form(E_t, edge_maps, edge_index):
-    tree_edge_indices = [edge_index[e] for e in E_t]
+    tree_edge_indices = tuple(edge_index[e] for e in E_t)
 
-    best = None
+    best = float("inf")
 
     for edge_map in edge_maps:
         code = 0
-
         for idx in tree_edge_indices:
             code |= 1 << edge_map[idx]
 
-        if best is None or code < best:
+        if code < best:
             best = code
 
     return best
