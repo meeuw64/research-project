@@ -1,5 +1,4 @@
 import networkx as nx
-from enum import Enum
 
 """
 Methods to generate the dual graph (facet-adjacency graph) of 

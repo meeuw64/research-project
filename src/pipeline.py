@@ -1,13 +1,7 @@
 import dual_graph_generator
 import symmetry_reduction
 import networkx as nx
-from itertools import combinations
-
-
-# Returns an iterator which enumerates all edge lists of spanning trees of G
-def spanning_tree_edges_iterator(G):
-    for T in nx.algorithms.tree.mst.SpanningTreeIterator(G):
-        yield list(T.edges())
+from graph_utils import spanning_tree_edges_iterator
 
 
 def unique_unfoldings(polytope_name):
