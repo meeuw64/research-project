@@ -8,3 +8,27 @@ Properties of the 1-skeleton graph of some convex polytope P:
 - 4-connected (you need to remove at least 4 vertices before the graph becomes disconnected)
 - Degree of each vertex is at least 4
 - For each vertex v, the neighbors of v inherit the combinatorics of a convex 3-dimensional polytope
+
+W4
+- #subgroups <-> #unique unfolding relation?
+- what are the number of unfoldings in each orbit
+- steer towards visualization
+- investigate Aut(G_P) ~= Aut(P) for (4D) archimedean solids
+- making the research more accessible to other students
+- add overlap testing to the pipeline
+
+Supervisor:
+1. introduce topics (broadly) -> current challenges -> your solution/contribution
+2. related work, how does your work differ, not too technical, bachelor cs should understand
+3. background (symmetry groups, graph automorphisms, introduce notation)
+4. experiments (1 experiment answers 1 question) (includes "results" section already):
+    - motivation
+    - setup
+    - result
+    - interpretation
+5. discussion, combination of all experiments combined
+6. conclusion ties into the introduction (more in depth)
+
+!!! disclose the use of AI
+!!! communicate results instead of process
+
