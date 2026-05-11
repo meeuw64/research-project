@@ -18,7 +18,7 @@ def edge_bitstring_to_data(bitmap, edge_index, G):
     edges = []
     for i, (u, v) in enumerate(G.edges()):
         if (bitmap >> i) & 1:
-            edges.append(f"({u},{v})")
+            edges.append((u,v))
 
     return edges
 
