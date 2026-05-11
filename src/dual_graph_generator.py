@@ -62,6 +62,25 @@ def dual_graph_4_simplex():
 def dual_graph_4_orthoplex():
     return nx.hypercube_graph(4) # tesseract is the dual of orthoplex
 
+
+def dual_graph_rectified_5_cell():
+    tetrahedra = ["t1", "t2", "t3", "t4", "t5"]
+    octahedra = ["o1", "o2", "o3", "o4", "o5"]
+
+    # Octahedral cells are mutually adjacent
+    G = nx.complete_graph(octahedra)
+
+    # Add tetrahedral cells
+    G.add_nodes_from(tetrahedra)
+
+    # Each tetrahedron is adjacent to 4 of the 5 octahedra
+    G.add_edges_from((t, o) for t in tetrahedra for o in octahedra)
+
+    # Remove the non-incident paired tetrahedron-octahedron adjacency
+    G.remove_edges_from(zip(tetrahedra, octahedra))
+
+    return G
+
 POLYTOPE_NAME_TO_DUAL_GRAPH = {
     "tetrahedron": dual_graph_tetrahedron(),
     "cube": dual_graph_cube(),
@@ -69,5 +88,6 @@ POLYTOPE_NAME_TO_DUAL_GRAPH = {
     "trunc-tetrahedron": dual_graph_truncated_tetrahedron(),
     "tesseract": dual_graph_tesseract(),
     "4-simplex": dual_graph_4_simplex(),
-    "4-orthoplex": dual_graph_4_orthoplex()
+    "4-orthoplex": dual_graph_4_orthoplex(),
+    "rectified-5-cell": dual_graph_rectified_5_cell(),
 }

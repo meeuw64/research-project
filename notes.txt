@@ -1,0 +1,10 @@
+W3:
+If we were to extend this to arbitrary polytope P and want to guarantee that all the unfoldings are unique, we need more information (namely geometry of the polytope). We would then need a new pipeline to be able to test congruency between two 3D shapes.
+In other words: dual graph trees→combinatorial representatives→geometric realization→geometric canonical form
+For arbitrary polytopes we need to incorperate the geometry of the shape more explicitly. Weighted graph with distances of the nodes. Not all automorphisms are guarenteed to correspond to symmetries anymore. 
+
+Properties of the 1-skeleton graph of some convex polytope P:
+- Finite, simple, connected
+- 4-connected (you need to remove at least 4 vertices before the graph becomes disconnected)
+- Degree of each vertex is at least 4
+- For each vertex v, the neighbors of v inherit the combinatorics of a convex 3-dimensional polytope
