@@ -19,4 +19,4 @@ def unique_unfoldings(polytope_name):
 
     unique = symmetry_reduction.group_equivalent_unfoldings(automorphisms, edge_index, tree_edge_lists,n_spanning_trees)
 
-    return unique
+    return edge_index, unique

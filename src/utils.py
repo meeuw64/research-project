@@ -13,10 +13,20 @@ def graph_to_data(G):
         "edges": [list(edge) for edge in G.edges()],
     }
 
+def edge_bitstring_to_data(bitmap, edge_index, G):
+
+    edges = []
+    for i, (u, v) in enumerate(G.edges()):
+        if (bitmap >> i) & 1:
+            edges.append(f"({u},{v})")
+
+    return edges
+
 def save_unfoldings(
         path,
         polytope_name,
         unfoldings,
+        edge_index,
 ):
     original_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[polytope_name]
     with path.open("w", encoding="utf-8") as f:
@@ -28,11 +38,11 @@ def save_unfoldings(
         )
         f.write("\n")
 
-        for i, tree in enumerate(unfoldings):
+        for i, edge_bitstring in enumerate(unfoldings):
             json.dump(
                 {
                     "index": i,
-                    "spanning-edges": [list(edge) for edge in tree.edges()],
+                    "spanning-edges": edge_bitstring_to_data(edge_bitstring, edge_index, original_graph),
                 },
                 f,
             )

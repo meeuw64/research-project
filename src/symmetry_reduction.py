@@ -19,6 +19,7 @@ def canonical_form(E_t, automorphisms, edge_index):
 
 # Returns a list of edge maps, where each edge map dictates how the edges get mapped under one of the automorphisms
 def compute_edge_automorphisms(G):
+    # edge -> index
     edge_index = {}
 
     # label all edges with some index

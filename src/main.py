@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # --------------- RUN PIPELINE ---------------
     start = time.perf_counter()
 
-    unique_trees = pipeline.unique_unfoldings(args.polytope)
+    edge_index, unique_trees = pipeline.unique_unfoldings(args.polytope)
 
     end = time.perf_counter()
 
@@ -39,4 +39,4 @@ if __name__ == "__main__":
 
     # --------------- WRITE RESULTS ---------------
     if args.save_trees:
-        utils.save_unfoldings(args.save_trees, args.polytope, unique_trees)
+        utils.save_unfoldings(args.save_trees, args.polytope, unique_trees, edge_index)
