@@ -42,6 +42,42 @@ def dual_graph_truncated_tetrahedron():
 
     return G
 
+
+def dual_graph_cuboctahedron():
+    # squares are arranged in same manner as in a cube
+    squares = ["+x", "-x", "+y", "-y", "+z", "-z"]
+    G = nx.Graph()
+    G.add_nodes_from(squares)
+
+    # 8 triangles pointing in direction of all octants
+    triangles = ["+++","-++","+-+", "--+","++-","-+-","+--","---"]
+    G.add_nodes_from(triangles)
+
+    # match every sign in a triangle to x, y, z respectively to get the connected square
+    for triangle in triangles:
+        for sign, axis in zip(triangle, "xyz"):
+            G.add_edge(triangle, sign + axis)
+
+    return G
+
+
+def dual_graph_truncated_cube():
+    # octagons are arranged and connected in same manner as in a cube
+    octagons = ["+x", "-x", "+y", "-y", "+z", "-z"]
+    G = nx.complete_graph(octagons)
+    opposites = [("+x", "-x"), ("+y", "-y"), ("+z", "-z")]
+    G.remove_edges_from(opposites)
+
+    # 8 triangles pointing in direction of all octants
+    triangles = ["+++","-++","+-+", "--+","++-","-+-","+--","---"]
+
+    # match every sign in a triangle to x, y, z respectively to get the connected octagon
+    for triangle in triangles:
+        for sign, axis in zip(triangle, "xyz"):
+            G.add_edge(triangle, sign + axis)
+
+    return G
+
 # 4D
 def dual_graph_tesseract():
     # dual graph of the n-cube can be formed (in this case n = 4)
@@ -85,7 +121,9 @@ POLYTOPE_NAME_TO_DUAL_GRAPH = {
     "tetrahedron": dual_graph_tetrahedron(),
     "cube": dual_graph_cube(),
     "octahedron": dual_graph_octahedron(),
-    "trunc-tetrahedron": dual_graph_truncated_tetrahedron(),
+    "truncated-tetrahedron": dual_graph_truncated_tetrahedron(),
+    "cuboctahedron": dual_graph_cuboctahedron(),
+    "truncated-cube": dual_graph_truncated_cube(),
     "tesseract": dual_graph_tesseract(),
     "4-simplex": dual_graph_4_simplex(),
     "4-orthoplex": dual_graph_4_orthoplex(),
