@@ -10,6 +10,8 @@ Properties of the 1-skeleton graph of some convex polytope P:
 - For each vertex v, the neighbors of v inherit the combinatorics of a convex 3-dimensional polytope
 
 W4
+
+## Meeting:
 - #subgroups <-> #unique unfolding relation?
 - what are the number of unfoldings in each orbit
 - steer towards visualization
@@ -32,3 +34,17 @@ Supervisor:
 !!! disclose the use of AI
 !!! communicate results instead of process
 
+## Other notes
+3D Archimedean solids: symmetry group is isomorphic to dual graph's automorphism group
+4D Archimedean solids: ???
+
+Number of spanning trees in complete graph K_n: n^(n-2) , Cayley's formula
+Number of graph automorphisms in complete graph K_n: n! , Precisely all permutations of the vertices
+Number of edges in complete graph K_n: n choose 2 = n * (n - 1) / 2 , Every vertex is connected to every other vertex
+
+-> runtime is bounded by O(|t(G)| * |Aut(G)| * |E_G|):
+    - |t(G)| <= n^(n-2)
+    - |Aut(G)| <= n!
+    - |E_G| <= n * (n - 1) / 2
+    So total runtime upperbound expressed in terms of n = |E_V| (number of vertices):
+    O(n^n / n^2 * n! * (n^2 - n) / 2) which is equivalent to O(n^n * n!)
