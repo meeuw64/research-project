@@ -9,8 +9,7 @@ Properties of the 1-skeleton graph of some convex polytope P:
 - Degree of each vertex is at least 4
 - For each vertex v, the neighbors of v inherit the combinatorics of a convex 3-dimensional polytope
 
-W4
-
+W4:
 ## Meeting:
 - #subgroups <-> #unique unfolding relation?
 - what are the number of unfoldings in each orbit
@@ -48,3 +47,16 @@ Number of edges in complete graph K_n: n choose 2 = n * (n - 1) / 2 , Every vert
     - |E_G| <= n * (n - 1) / 2
     So total runtime upperbound expressed in terms of n = |E_V| (number of vertices):
     O(n^n / n^2 * n! * (n^2 - n) / 2) which is equivalent to O(n^n * n!)
+
+W5:
+## Meeting
+- Add a parameter to compute |Aut(G_P*)| to investigate symmetries ~= Aut(G_P)
+- When does Aut stop corresponding to Symmetries -> do some experiments and report the findings when they stop corresponding
+- How in depth should the explanation in the paper be -> add appendix if it goes into too much depth
+
+## Midterm presentation
+- Visualize symmetric nets
+- RQ -> Provide dataset with all unfoldings
+- Provide a counter example where Aut(G_P) != Sym(P)
+- Change "shape" to surface of ...
+- Every experiment in the paper ties back into one of the research questions, make it explicit
