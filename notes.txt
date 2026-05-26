@@ -60,3 +60,4 @@ W5:
 - Provide a counter example where Aut(G_P) != Sym(P)
 - Change "shape" to surface of ...
 - Every experiment in the paper ties back into one of the research questions, make it explicit
+- For final presentation, use slides instead of poster
