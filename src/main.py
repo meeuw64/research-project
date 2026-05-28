@@ -1,3 +1,4 @@
+import sys
 import time
 import dual_graph_generator
 import argparse
@@ -14,6 +15,12 @@ if __name__ == "__main__":
                         choices=dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH.keys(),
                         help="Name of polytope to analyze")
 
+    parser.add_argument(
+        "--info",
+        action="store_true",
+        help=f"Only prints: |Aut(G_P*)|, |Orbits|, "
+    )
+
     default_path = utils.DATA / "unfoldings.jsonl"
     parser.add_argument(
         "--save-trees",
@@ -26,6 +33,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # --------------- RUN PIPELINE ---------------
+    if args.info:
+        pipeline.polytope_info(args.polytope)
+        sys.exit(0)
+
     start = time.perf_counter()
 
     edge_index, unique_trees = pipeline.unique_unfoldings(args.polytope)
