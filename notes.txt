@@ -61,3 +61,15 @@ W5:
 - Change "shape" to surface of ...
 - Every experiment in the paper ties back into one of the research questions, make it explicit
 - For final presentation, use slides instead of poster
+
+W7:
+- provide example where Aut(G) != Sym(P) ->  experimental section
+- mention literature on this
+
+- start at the roots at the same location
+- tolerance
+OR
+- for a symmetry is there a rotation/reflection that maps the vertices as automorphism
+- registration -> rotation between the same shape
+
+- provide the spanning trees on github as text file
