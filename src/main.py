@@ -50,4 +50,4 @@ if __name__ == "__main__":
 
     # --------------- WRITE RESULTS ---------------
     if args.save_trees:
-        utils.save_unfoldings(args.save_trees, args.polytope, unique_trees, edge_index)
+        utils.save_unfoldings(args.save_trees, args.polytope, unique_trees)

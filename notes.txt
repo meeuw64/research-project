@@ -63,6 +63,8 @@ W5:
 - For final presentation, use slides instead of poster
 
 W7:
+
+Meeting 1:
 - provide example where Aut(G) != Sym(P) ->  experimental section
 - mention literature on this
 
@@ -73,3 +75,10 @@ OR
 - registration -> rotation between the same shape
 
 - provide the spanning trees on github as text file
+
+Meeting 2:
+- Application: understanding the 4th dimension, computational geometry algorithms
+- Responsible research: reproducibility -> how this achieved? documentation, github (test scripts) in experiments section, etc.
+
+
+annotate graph vertices with the shape's vertices.
