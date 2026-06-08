@@ -31,9 +31,7 @@ def polytope_info(polytope_name):
     print(f"Minimum possible number of orbits: {orbit_lower_bound}")
 
 
-def unique_unfoldings(polytope_name):
-    base_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[polytope_name]
-
+def unique_unfoldings(base_graph):
     automorphisms, edge_index = symmetry_reduction.compute_edge_automorphisms(base_graph)
 
     print(f"Number of automorphisms: {len(automorphisms)}")

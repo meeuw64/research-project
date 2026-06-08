@@ -39,7 +39,8 @@ if __name__ == "__main__":
 
     start = time.perf_counter()
 
-    edge_index, unique_trees = pipeline.unique_unfoldings(args.polytope)
+    dual_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[args.polytope]
+    edge_index, unique_trees = pipeline.unique_unfoldings(dual_graph)
 
     end = time.perf_counter()
 
