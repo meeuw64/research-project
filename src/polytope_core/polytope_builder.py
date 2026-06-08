@@ -559,6 +559,106 @@ class PolytopeBuilder:
         )
 
     @staticmethod
+    def build_octahedral_prism() -> Polytope:
+        octahedron = np.array(
+            [
+                [1, 0, 0],
+                [-1, 0, 0],
+                [0, 1, 0],
+                [0, -1, 0],
+                [0, 0, 1],
+                [0, 0, -1],
+            ],
+            dtype=float,
+        )
+
+        height = 1.0 / np.sqrt(2.0)
+
+        vertices = np.array(
+            [
+                [*vertex, level]
+                for level in (-height, height)
+                for vertex in octahedron
+            ],
+            dtype=float,
+        )
+
+        cells_vertices: list[tuple[int, ...]] = [
+            tuple(range(6)),
+            tuple(range(6, 12)),
+        ]
+
+        opposite_pairs = [
+            (0, 1),
+            (2, 3),
+            (4, 5),
+        ]
+
+        octahedron_faces = [
+            tuple(
+                opposite_pairs[i][choice[i]]
+                for i in range(3)
+            )
+            for choice in product((0, 1), repeat=3)
+        ]
+
+        for face in octahedron_faces:
+            cells_vertices.append(
+                tuple(
+                    layer * 6 + vertex_id
+                    for layer in range(2)
+                    for vertex_id in face
+                )
+            )
+
+        ridges: list[Ridge] = []
+        cell_ridges: list[list[int]] = [
+            [] for _ in cells_vertices
+        ]
+
+        for cell_a, cell_b in combinations(
+            range(len(cells_vertices)), 2
+        ):
+            intersection = tuple(
+                sorted(
+                    set(cells_vertices[cell_a])
+                    & set(cells_vertices[cell_b])
+                )
+            )
+
+            if len(intersection) not in (3, 4):
+                continue
+
+            ridge_id = len(ridges)
+
+            ridges.append(
+                Ridge(
+                    vertices=intersection,
+                    incident_cells=(cell_a, cell_b),
+                )
+            )
+
+            cell_ridges[cell_a].append(ridge_id)
+            cell_ridges[cell_b].append(ridge_id)
+
+        cells = [
+            Cell(
+                vertices=tuple(sorted(vertex_ids)),
+                ridges=tuple(sorted(ridge_ids)),
+            )
+            for vertex_ids, ridge_ids in zip(
+                cells_vertices,
+                cell_ridges,
+            )
+        ]
+
+        return Polytope(
+            vertices=vertices,
+            ridges=ridges,
+            cells=cells,
+        )
+
+    @staticmethod
     def build_decachoron() -> Polytope:
         verts5 = np.asarray(
             sorted(set(permutations((0, 0, 1, 2, 2)))),
@@ -641,6 +741,7 @@ POLYTOPE_NAME_MAP = {
     "16-cell" : PolytopeBuilder.build_16_cell(),
     "rectified-5-cell" : PolytopeBuilder.build_rectified_5_cell(),
     "truncated-5-cell" : PolytopeBuilder.build_truncated_5_cell(),
-    "tetrahedral-prism" : PolytopeBuilder.build_tetrahedral_prism()
+    "tetrahedral-prism" : PolytopeBuilder.build_tetrahedral_prism(),
+    "octahedral-prism" : PolytopeBuilder.build_octahedral_prism()
 }
 
