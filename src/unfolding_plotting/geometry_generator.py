@@ -1,6 +1,5 @@
 from collections import deque
-
-from src.polytope import *
+from polytope_core.polytope import *
 
 
 # ---------------------------------------------------------------------------

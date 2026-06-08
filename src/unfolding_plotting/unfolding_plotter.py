@@ -1,7 +1,7 @@
 import pyvista as pv
-from src.polytope_builder import PolytopeBuilder
-from src.unfolding_enumeration import pipeline, utils
-from src.polytope import *
+from polytope_core.polytope_builder import PolytopeBuilder
+from unfolding_enumeration import pipeline, utils
+from polytope_core.polytope import *
 from geometry_generator import unfold_polytope
 
 

@@ -1,8 +1,8 @@
-import dual_graph_generator
-import symmetry_reduction
+from . import dual_graph_generator
+from . import symmetry_reduction
+from .graph_utils import spanning_tree_edges_iterator
 import networkx as nx
 import math
-from graph_utils import spanning_tree_edges_iterator
 
 def polytope_info(polytope_name):
     base_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[polytope_name]

@@ -1,9 +1,9 @@
 from pathlib import Path
 import json
-import dual_graph_generator
+from . import dual_graph_generator
 import networkx as nx
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
 DATA.mkdir(parents=True, exist_ok=True)
 

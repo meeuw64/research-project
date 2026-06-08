@@ -1,9 +1,9 @@
 from __future__ import annotations
 from itertools import combinations, product, permutations
 import numpy as np
-from polytope import Polytope
-from polytope import Ridge
-from polytope import Cell
+from .polytope import Polytope
+from .polytope import Ridge
+from .polytope import Cell
 
 
 class PolytopeBuilder:
