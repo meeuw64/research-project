@@ -5,6 +5,15 @@ from .polytope import Polytope
 from .polytope import Ridge
 from .polytope import Cell
 
+def project_to_R4(points):
+
+    centroid = points.mean(axis=0)
+
+    U, S, VT = np.linalg.svd(points - centroid)
+
+    basis = VT[:4]
+
+    return (points - centroid) @ basis.T
 
 class PolytopeBuilder:
 
@@ -626,13 +635,12 @@ class PolytopeBuilder:
         )
 
 
+POLYTOPE_NAME_MAP = {
+    "5-cell" : PolytopeBuilder.build_5_cell(),
+    "tesseract" : PolytopeBuilder.build_tesseract(),
+    "16-cell" : PolytopeBuilder.build_16_cell(),
+    "rectified-5-cell" : PolytopeBuilder.build_rectified_5_cell(),
+    "truncated-5-cell" : PolytopeBuilder.build_truncated_5_cell(),
+    "tetrahedral-prism" : PolytopeBuilder.build_tetrahedral_prism()
+}
 
-def project_to_R4(points):
-
-    centroid = points.mean(axis=0)
-
-    U, S, VT = np.linalg.svd(points - centroid)
-
-    basis = VT[:4]
-
-    return (points - centroid) @ basis.T

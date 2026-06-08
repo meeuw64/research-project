@@ -1,7 +1,8 @@
 import sys
 import time
 import argparse
-from unfolding_enumeration import pipeline, dual_graph_generator, utils
+from unfolding_enumeration import pipeline, utils
+from polytope_core import polytope_builder
 
 if __name__ == "__main__":
     # --------------- PROGRAM ARGUMENTS ---------------
@@ -10,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument("--polytope",
                         type=str,
                         required=True,
-                        choices=dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH.keys(),
+                        choices=polytope_builder.POLYTOPE_NAME_MAP.keys(),
                         help="Name of polytope to analyze")
 
     parser.add_argument(
@@ -31,13 +32,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # --------------- RUN PIPELINE ---------------
+    dual_graph = polytope_builder.POLYTOPE_NAME_MAP[args.polytope].dual_graph()
+
     if args.info:
-        pipeline.polytope_info(args.polytope)
+        pipeline.polytope_info(dual_graph, args.polytope)
         sys.exit(0)
 
     start = time.perf_counter()
 
-    dual_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[args.polytope]
     edge_index, unique_trees = pipeline.unique_unfoldings(dual_graph)
 
     end = time.perf_counter()
@@ -49,4 +51,4 @@ if __name__ == "__main__":
 
     # --------------- WRITE RESULTS ---------------
     if args.save_trees:
-        utils.save_unfoldings(args.save_trees, args.polytope, unique_trees)
+        utils.save_unfoldings(args.save_trees, dual_graph, unique_trees)

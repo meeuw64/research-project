@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-from . import dual_graph_generator
 import networkx as nx
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -37,10 +36,9 @@ def edge_bitstring_to_graph(bitmap, G):
 
 def save_unfoldings(
         path,
-        polytope_name,
+        original_graph,
         unfoldings,
 ):
-    original_graph = dual_graph_generator.POLYTOPE_NAME_TO_DUAL_GRAPH[polytope_name]
     with path.open("w", encoding="utf-8") as f:
         json.dump(
             {
