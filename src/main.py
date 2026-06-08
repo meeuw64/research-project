@@ -1,9 +1,7 @@
 import sys
 import time
-import dual_graph_generator
 import argparse
-import pipeline
-import utils
+from src.unfolding_enumeration import pipeline, dual_graph_generator, utils
 
 if __name__ == "__main__":
     # --------------- PROGRAM ARGUMENTS ---------------

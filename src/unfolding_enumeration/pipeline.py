@@ -42,6 +42,6 @@ def unique_unfoldings(base_graph):
 
     print(f"Number of spanning trees: {n_spanning_trees}")
 
-    unique = symmetry_reduction.group_equivalent_unfoldings(automorphisms, edge_index, tree_edge_lists,n_spanning_trees)
+    unique = symmetry_reduction.group_equivalent_unfoldings(automorphisms, edge_index, tree_edge_lists, n_spanning_trees)
 
     return edge_index, unique

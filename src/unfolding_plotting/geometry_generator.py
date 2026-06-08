@@ -1,6 +1,7 @@
 from collections import deque
 
-from polytope import *
+from src.polytope import *
+
 
 # ---------------------------------------------------------------------------
 # Script for computing the 3D geometry of a polytope unfolding

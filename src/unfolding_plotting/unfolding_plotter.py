@@ -1,10 +1,8 @@
 import pyvista as pv
-from polytope_builder import PolytopeBuilder
-from src import pipeline, utils
-
-from polytope import *
+from src.polytope_builder import PolytopeBuilder
+from src.unfolding_enumeration import pipeline, utils
+from src.polytope import *
 from geometry_generator import unfold_polytope
-
 
 
 # ---------------------------------------------------------------------------
@@ -151,12 +149,12 @@ def plot_unfolding(
 
 
 if __name__ == "__main__":
-    polytope = PolytopeBuilder.build_rectified_5_cell()
+    polytope = PolytopeBuilder.build_tetrahedral_prism()
     dual = polytope.dual_graph()
 
     edge_index, unfoldings = pipeline.unique_unfoldings(dual)
     unfoldings = [utils.edge_bitstring_to_graph(unfolding, dual) for unfolding in unfoldings]
-    spanning_tree = unfoldings[1]
+    spanning_tree = unfoldings[0]
 
     unfolding = unfold_polytope(
         polytope=polytope,
@@ -176,5 +174,5 @@ if __name__ == "__main__":
         ):
             print(f"  vertex {vertex_id:2d}: {coordinate}")
 
-    plotter = plot_unfolding(polytope, unfolding)
+    plotter = plot_unfolding(polytope, unfolding, face_opacity=1.0)
     plotter.show()

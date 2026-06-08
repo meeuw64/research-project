@@ -9,6 +9,63 @@ from polytope import Cell
 class PolytopeBuilder:
 
     @staticmethod
+    def build_5_cell() -> Polytope:
+        verts5 = np.eye(5, dtype=float)
+        vertices = project_to_R4(verts5)
+
+        cells_vertices = [
+            tuple(
+                vertex_id
+                for vertex_id in range(5)
+                if vertex_id != omitted_vertex
+            )
+            for omitted_vertex in range(5)
+        ]
+
+        ridges: list[Ridge] = []
+        cell_ridges: list[list[int]] = [
+            [] for _ in cells_vertices
+        ]
+
+        for cell_a, cell_b in combinations(range(5), 2):
+            intersection = tuple(
+                sorted(
+                    set(cells_vertices[cell_a])
+                    & set(cells_vertices[cell_b])
+                )
+            )
+
+            ridge_id = len(ridges)
+
+            ridges.append(
+                Ridge(
+                    vertices=intersection,
+                    incident_cells=(cell_a, cell_b),
+                )
+            )
+
+            cell_ridges[cell_a].append(ridge_id)
+            cell_ridges[cell_b].append(ridge_id)
+
+        cells = [
+            Cell(
+                vertices=vertices_of_cell,
+                ridges=tuple(sorted(ridge_ids)),
+            )
+            for vertices_of_cell, ridge_ids in zip(
+                cells_vertices,
+                cell_ridges,
+            )
+        ]
+
+        return Polytope(
+            vertices=vertices,
+            ridges=ridges,
+            cells=cells,
+        )
+
+
+    @staticmethod
     def build_tesseract() -> Polytope:
         """Construct a tesseract centered at the origin."""
         signs = list(product((-1, 1), repeat=4))
@@ -259,6 +316,235 @@ class PolytopeBuilder:
 
         return Polytope(
             vertices=verts4,
+            ridges=ridges,
+            cells=cells,
+        )
+
+    @staticmethod
+    def build_truncated_5_cell() -> Polytope:
+        """
+        Construct the truncated 5-cell.
+
+        Combinatorial structure
+        -----------------------
+        Vertices:
+            The 20 permutations of (2, 1, 0, 0, 0).
+
+        Cells:
+            - 5 tetrahedra, one at each original vertex of the 5-cell.
+            - 5 truncated tetrahedra, one for each original tetrahedral facet.
+
+        Ridges:
+            - 20 triangular ridges between a tetrahedron and a
+              truncated tetrahedron.
+            - 10 hexagonal ridges between pairs of truncated tetrahedra.
+
+        The five-dimensional coordinates lie in the affine hyperplane
+        x_0 + ... + x_4 = 3, so they are projected isometrically into R^4.
+        """
+
+        #
+        # Vertices
+        #
+        # A vertex is represented by an ordered pair (i, j), i != j:
+        #
+        #     x_i = 2
+        #     x_j = 1
+        #     all other coordinates are 0.
+        #
+
+        vertex_descriptions = [
+            (i, j)
+            for i in range(5)
+            for j in range(5)
+            if i != j
+        ]
+
+        verts5 = np.zeros((20, 5), dtype=float)
+
+        for vertex_id, (i, j) in enumerate(vertex_descriptions):
+            verts5[vertex_id, i] = 2.0
+            verts5[vertex_id, j] = 1.0
+
+        # Project the affine 4-dimensional realization into R^4.
+        verts4 = project_to_R4(verts5)
+
+        #
+        # Cells
+        #
+
+        cells_vertices: list[tuple[int, ...]] = []
+
+        # Tetrahedral cells.
+        #
+        # The tetrahedron at original simplex vertex i contains all
+        # truncated vertices lying on edges directed away from i:
+        #
+        #     (i, j), j != i.
+        #
+        for i in range(5):
+            tetrahedron = tuple(
+                vertex_id
+                for vertex_id, (a, b) in enumerate(vertex_descriptions)
+                if a == i
+            )
+
+            assert len(tetrahedron) == 4
+            cells_vertices.append(tuple(sorted(tetrahedron)))
+
+        # Truncated-tetrahedral cells.
+        #
+        # The original facet opposite simplex vertex i contains precisely
+        # the original vertices whose indices are not i. After truncation,
+        # its vertices are the ordered pairs (a, b) with a != i and b != i.
+        #
+        for i in range(5):
+            truncated_tetrahedron = tuple(
+                vertex_id
+                for vertex_id, (a, b) in enumerate(vertex_descriptions)
+                if a != i and b != i
+            )
+
+            assert len(truncated_tetrahedron) == 12
+            cells_vertices.append(tuple(sorted(truncated_tetrahedron)))
+
+        #
+        # Ridges
+        #
+        # Intersections of distinct cells are:
+        #
+        #     tetrahedron ∩ truncated tetrahedron : triangle, 3 vertices
+        #     truncated tetrahedron ∩ truncated tetrahedron : hexagon, 6 vertices
+        #
+        # Distinct tetrahedral cells do not meet along ridges.
+        #
+
+        ridges: list[Ridge] = []
+        cell_ridges: list[list[int]] = [
+            [] for _ in range(len(cells_vertices))
+        ]
+
+        for cell_a, cell_b in combinations(range(len(cells_vertices)), 2):
+            intersection = tuple(
+                sorted(
+                    set(cells_vertices[cell_a])
+                    & set(cells_vertices[cell_b])
+                )
+            )
+
+            if len(intersection) not in (3, 6):
+                continue
+
+            ridge_id = len(ridges)
+
+            ridges.append(
+                Ridge(
+                    vertices=intersection,
+                    incident_cells=(cell_a, cell_b),
+                )
+            )
+
+            cell_ridges[cell_a].append(ridge_id)
+            cell_ridges[cell_b].append(ridge_id)
+
+        #
+        # Cells
+        #
+
+        cells = [
+            Cell(
+                vertices=vertices,
+                ridges=tuple(sorted(ridge_ids)),
+            )
+            for vertices, ridge_ids in zip(
+                cells_vertices,
+                cell_ridges,
+            )
+        ]
+
+        return Polytope(
+            vertices=verts4,
+            ridges=ridges,
+            cells=cells,
+        )
+
+
+    @staticmethod
+    def build_tetrahedral_prism() -> Polytope:
+        tetrahedron = np.array(
+            [
+                [1, 1, 1],
+                [1, -1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+            ],
+            dtype=float,
+        ) / np.sqrt(3.0)
+
+        vertices = np.array(
+            [
+                [*vertex, height]
+                for height in (-0.5, 0.5)
+                for vertex in tetrahedron
+            ],
+            dtype=float,
+        )
+
+        cells_vertices: list[tuple[int, ...]] = [
+            (0, 1, 2, 3),
+            (4, 5, 6, 7),
+        ]
+
+        for omitted_vertex in range(4):
+            prism_vertices = tuple(
+                layer * 4 + vertex
+                for layer in range(2)
+                for vertex in range(4)
+                if vertex != omitted_vertex
+            )
+            cells_vertices.append(prism_vertices)
+
+        ridges: list[Ridge] = []
+        cell_ridges: list[list[int]] = [
+            [] for _ in cells_vertices
+        ]
+
+        for cell_a, cell_b in combinations(range(len(cells_vertices)), 2):
+            intersection = tuple(
+                sorted(
+                    set(cells_vertices[cell_a])
+                    & set(cells_vertices[cell_b])
+                )
+            )
+
+            if len(intersection) not in (3, 4):
+                continue
+
+            ridge_id = len(ridges)
+
+            ridges.append(
+                Ridge(
+                    vertices=intersection,
+                    incident_cells=(cell_a, cell_b),
+                )
+            )
+
+            cell_ridges[cell_a].append(ridge_id)
+            cell_ridges[cell_b].append(ridge_id)
+
+        cells = [
+            Cell(
+                vertices=tuple(sorted(vertices)),
+                ridges=tuple(sorted(ridge_ids)),
+            )
+            for vertices, ridge_ids in zip(
+                cells_vertices,
+                cell_ridges,
+            )
+        ]
+
+        return Polytope(
+            vertices=vertices,
             ridges=ridges,
             cells=cells,
         )
