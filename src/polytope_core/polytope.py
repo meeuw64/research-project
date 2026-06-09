@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import networkx as nx
-import numpy as np
 from numpy.typing import NDArray
-
+from scipy.spatial.distance import pdist
+import numpy as np
 
 FloatArray = NDArray[np.float64]
 
@@ -101,10 +101,58 @@ class CellPlacement:
 
 @dataclass
 class Unfolding:
-    """The complete geometric realization of a spanning-tree unfolding."""
-
     placements: dict[int, CellPlacement]
     tree: nx.Graph
     root: int
     parent: dict[int, int | None]
     hinge_ridge: dict[int, int | None]
+
+    # converts the unfolding to a point cloud of the vertices
+    def mesh_vertices_array(self, tol: float = 1e-8) -> FloatArray:
+        unique_vertices: list[np.ndarray] = []
+
+        for placement in self.placements.values():
+            for coordinate in placement.coordinates:
+                for existing in unique_vertices:
+                    if np.allclose(
+                        coordinate,
+                        existing,
+                        atol=tol,
+                        rtol=0.0,
+                    ):
+                        break
+                else:
+                    unique_vertices.append(coordinate)
+
+        return np.asarray(unique_vertices, dtype=np.float64)
+
+    def is_congruent_to(
+        self,
+        other: "Unfolding",
+        tol: float = 1e-8,
+    ) -> bool:
+        """
+        Check whether two unfoldings are congruent up to
+        translation, rotation, and reflection.
+
+        Uses pairwise distance invariants of the vertex clouds.
+        """
+
+        vertices_a = self.mesh_vertices_array(tol)
+        vertices_b = other.mesh_vertices_array(tol)
+
+        if len(vertices_a) != len(vertices_b):
+            return False
+
+        if len(vertices_a) <= 1:
+            return True
+
+        distances_a = np.sort(pdist(vertices_a))
+        distances_b = np.sort(pdist(vertices_b))
+
+        return np.allclose(
+            distances_a,
+            distances_b,
+            atol=tol,
+            rtol=0.0,
+        )
