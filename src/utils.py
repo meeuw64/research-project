@@ -66,7 +66,7 @@ def load_spanning_trees(path, i : int | None = None):
         polytope_name = metadata["polytope-name"]
 
         for line_number, line in enumerate(f, start=2):
-            if i and i != line_number:
+            if i and i != line_number-2:
                 continue
 
             if not line.strip():
