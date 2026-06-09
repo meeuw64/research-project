@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import networkx as nx
 from numpy.typing import NDArray
-from scipy.spatial.distance import pdist
 import numpy as np
 
 FloatArray = NDArray[np.float64]
@@ -107,7 +106,6 @@ class Unfolding:
     parent: dict[int, int | None]
     hinge_ridge: dict[int, int | None]
 
-    # converts the unfolding to a point cloud of the vertices
     def mesh_vertices_array(self, tol: float = 1e-8) -> FloatArray:
         unique_vertices: list[np.ndarray] = []
 
@@ -126,16 +124,73 @@ class Unfolding:
 
         return np.asarray(unique_vertices, dtype=np.float64)
 
+    @staticmethod
+    def _canonical_cloud(cloud: FloatArray) -> FloatArray:
+        """
+        Transform a centered point cloud into a canonical frame.
+        """
+
+        frame = Unfolding._canonical_frame(cloud)
+
+        candidates = []
+
+        for sign in (1.0, -1.0):
+            transformed = cloud @ frame.T
+
+            transformed[:, 2] *= sign
+
+            order = np.lexsort(
+                (
+                    np.round(transformed[:, 2], 12),
+                    np.round(transformed[:, 1], 12),
+                    np.round(transformed[:, 0], 12),
+                )
+            )
+
+            candidates.append(
+                np.round(transformed[order], 12)
+            )
+
+        return min(
+            candidates,
+            key=lambda array: array.tobytes(),
+        )
+
+    @staticmethod
+    def _canonical_frame(cloud: FloatArray) -> FloatArray:
+        """
+        Construct a deterministic orthonormal basis from the cloud.
+        """
+
+        norms = np.linalg.norm(cloud, axis=1)
+
+        first_index = np.argmax(norms)
+        e1 = cloud[first_index]
+        e1 /= np.linalg.norm(e1)
+
+        residuals = cloud - np.outer(cloud @ e1, e1)
+
+        residual_norms = np.linalg.norm(residuals, axis=1)
+
+        second_index = np.argmax(residual_norms)
+
+        e2 = residuals[second_index]
+        e2 /= np.linalg.norm(e2)
+
+        e3 = np.cross(e1, e2)
+        e3 /= np.linalg.norm(e3)
+
+        return np.vstack((e1, e2, e3))
+
     def is_congruent_to(
-        self,
-        other: "Unfolding",
-        tol: float = 1e-8,
+            self,
+            other: "Unfolding",
+            tol: float = 1e-8,
     ) -> bool:
         """
-        Check whether two unfoldings are congruent up to
-        translation, rotation, and reflection.
+        Congruency up to translation, rotation and reflection.
 
-        Uses pairwise distance invariants of the vertex clouds.
+        Uses canonical registration of the vertex clouds.
         """
 
         vertices_a = self.mesh_vertices_array(tol)
@@ -144,15 +199,18 @@ class Unfolding:
         if len(vertices_a) != len(vertices_b):
             return False
 
-        if len(vertices_a) <= 1:
+        if len(vertices_a) == 0:
             return True
 
-        distances_a = np.sort(pdist(vertices_a))
-        distances_b = np.sort(pdist(vertices_b))
+        cloud_a = vertices_a - vertices_a.mean(axis=0)
+        cloud_b = vertices_b - vertices_b.mean(axis=0)
+
+        canonical_a = self._canonical_cloud(cloud_a)
+        canonical_b = self._canonical_cloud(cloud_b)
 
         return np.allclose(
-            distances_a,
-            distances_b,
+            canonical_a,
+            canonical_b,
             atol=tol,
             rtol=0.0,
         )
