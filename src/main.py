@@ -1,7 +1,8 @@
 import sys
 import time
 import argparse
-from unfolding_enumeration import pipeline, utils
+import utils
+from unfolding_enumeration import pipeline
 from polytope_core import polytope_builder
 
 if __name__ == "__main__":
@@ -32,10 +33,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # --------------- RUN PIPELINE ---------------
-    dual_graph = polytope_builder.POLYTOPE_NAME_MAP[args.polytope].dual_graph()
+    polytope_name = args.polytope
+    dual_graph = polytope_builder.POLYTOPE_NAME_MAP[polytope_name].dual_graph()
 
     if args.info:
-        pipeline.polytope_info(dual_graph, args.polytope)
+        pipeline.polytope_info(dual_graph, polytope_name)
         sys.exit(0)
 
     start = time.perf_counter()
@@ -51,4 +53,4 @@ if __name__ == "__main__":
 
     # --------------- WRITE RESULTS ---------------
     if args.save_trees:
-        utils.save_unfoldings(args.save_trees, dual_graph, unique_trees)
+        utils.save_unfoldings(args.save_trees, dual_graph, polytope_name, unique_trees)

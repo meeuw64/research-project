@@ -1,6 +1,7 @@
 import pyvista as pv
 from polytope_core.polytope_builder import PolytopeBuilder
-from unfolding_enumeration import pipeline, utils
+from unfolding_enumeration import pipeline
+import utils
 from polytope_core.polytope import *
 from geometry_generator import unfold_polytope
 
@@ -149,7 +150,7 @@ def plot_unfolding(
 
 
 if __name__ == "__main__":
-    polytope = PolytopeBuilder.build_tetrahedral_prism()
+    polytope = PolytopeBuilder.build_rectified_5_cell()
     dual = polytope.dual_graph()
 
     edge_index, unfoldings = pipeline.unique_unfoldings(dual)
@@ -161,18 +162,6 @@ if __name__ == "__main__":
         tree=spanning_tree,
         root=0,
     )
-
-    print(f"Dual graph: {dual.number_of_nodes()} cells, {dual.number_of_edges()} adjacencies")
-    print(f"Tree edges: {spanning_tree.number_of_edges()}")
-
-    for cell_id in sorted(unfolding.placements):
-        placement = unfolding.placements[cell_id]
-        print(f"\nCell {cell_id}")
-        for vertex_id, coordinate in zip(
-            placement.vertex_ids,
-            placement.coordinates,
-        ):
-            print(f"  vertex {vertex_id:2d}: {coordinate}")
 
     plotter = plot_unfolding(polytope, unfolding, face_opacity=1.0)
     plotter.show()
