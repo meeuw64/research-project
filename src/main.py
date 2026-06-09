@@ -21,13 +21,13 @@ if __name__ == "__main__":
         help=f"Only prints: |Aut(G_P*)|, |Orbits|, "
     )
 
-    default_path = utils.DATA / "unfoldings.jsonl"
     parser.add_argument(
         "--save-trees",
         nargs="?",
-        const=default_path,
-        metavar="PATH",
-        help=f"Save all spanning trees to PATH; defaults to {default_path}"
+        const="",
+        default=None,
+        metavar="FILE_NAME",
+        help="Save all spanning trees, uses <polytope_name>.jsonl as default."
     )
 
     args = parser.parse_args()
@@ -52,5 +52,11 @@ if __name__ == "__main__":
     print(f"Number of unique unfoldings: {len(unique_trees)}")
 
     # --------------- WRITE RESULTS ---------------
-    if args.save_trees:
-        utils.save_unfoldings(args.save_trees, dual_graph, polytope_name, unique_trees)
+    if args.save_trees is None:
+        pass
+    elif args.save_trees == "":
+        save_path = utils.DATA / (polytope_name + ".jsonl")
+        utils.save_unfoldings(save_path, dual_graph, polytope_name, unique_trees)
+    else:
+        save_path = utils.DATA / (args.save_trees + ".jsonl")
+        utils.save_unfoldings(save_path, dual_graph, polytope_name, unique_trees)

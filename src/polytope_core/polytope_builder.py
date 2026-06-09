@@ -741,6 +741,7 @@ POLYTOPE_NAME_MAP = {
     "16-cell" : PolytopeBuilder.build_16_cell(),
     "rectified-5-cell" : PolytopeBuilder.build_rectified_5_cell(),
     "truncated-5-cell" : PolytopeBuilder.build_truncated_5_cell(),
+    "decachoron" : PolytopeBuilder.build_decachoron(),
     "tetrahedral-prism" : PolytopeBuilder.build_tetrahedral_prism(),
     "octahedral-prism" : PolytopeBuilder.build_octahedral_prism()
 }

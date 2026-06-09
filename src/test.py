@@ -3,7 +3,7 @@ from unfolding_plotting import geometry_generator
 from unfolding_plotting import unfolding_plotter
 
 if __name__ == "__main__":
-    polytope, spanning_tree = utils.load_single_polytope_unfolding(utils.DATA / "unfoldings.jsonl", 0)
+    polytope, spanning_tree = utils.load_single_polytope_unfolding(utils.DATA / "decachoron.jsonl", 1)
     dual = polytope.dual_graph()
 
     unfolding = geometry_generator.unfold_polytope(
