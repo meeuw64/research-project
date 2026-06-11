@@ -106,111 +106,122 @@ class Unfolding:
     parent: dict[int, int | None]
     hinge_ridge: dict[int, int | None]
 
-    def mesh_vertices_array(self, tol: float = 1e-8) -> FloatArray:
-        unique_vertices: list[np.ndarray] = []
-
-        for placement in self.placements.values():
-            for coordinate in placement.coordinates:
-                for existing in unique_vertices:
-                    if np.allclose(
-                        coordinate,
-                        existing,
-                        atol=tol,
-                        rtol=0.0,
-                    ):
-                        break
-                else:
-                    unique_vertices.append(coordinate)
-
-        return np.asarray(unique_vertices, dtype=np.float64)
-
-    @staticmethod
-    def _canonical_cloud(cloud: FloatArray) -> FloatArray:
-        """
-        Transform a centered point cloud into a canonical frame.
-        """
-
-        frame = Unfolding._canonical_frame(cloud)
-
-        candidates = []
-
-        for sign in (1.0, -1.0):
-            transformed = cloud @ frame.T
-
-            transformed[:, 2] *= sign
-
-            order = np.lexsort(
-                (
-                    np.round(transformed[:, 2], 12),
-                    np.round(transformed[:, 1], 12),
-                    np.round(transformed[:, 0], 12),
-                )
-            )
-
-            candidates.append(
-                np.round(transformed[order], 12)
-            )
-
-        return min(
-            candidates,
-            key=lambda array: array.tobytes(),
-        )
-
-    @staticmethod
-    def _canonical_frame(cloud: FloatArray) -> FloatArray:
-        """
-        Construct a deterministic orthonormal basis from the cloud.
-        """
-
-        norms = np.linalg.norm(cloud, axis=1)
-
-        first_index = np.argmax(norms)
-        e1 = cloud[first_index]
-        e1 /= np.linalg.norm(e1)
-
-        residuals = cloud - np.outer(cloud @ e1, e1)
-
-        residual_norms = np.linalg.norm(residuals, axis=1)
-
-        second_index = np.argmax(residual_norms)
-
-        e2 = residuals[second_index]
-        e2 /= np.linalg.norm(e2)
-
-        e3 = np.cross(e1, e2)
-        e3 /= np.linalg.norm(e3)
-
-        return np.vstack((e1, e2, e3))
-
     def is_congruent_to(
-            self,
-            other: "Unfolding",
-            tol: float = 1e-8,
+        self,
+        other: "Unfolding",
+        tol: float = 1e-8,
     ) -> bool:
         """
-        Congruency up to translation, rotation and reflection.
+        Return whether one global Euclidean isometry maps this unfolding
+        onto ``other``.
 
-        Uses canonical registration of the vertex clouds.
+        Correspondence is determined by ``(cell_id, vertex_id)``. This is
+        important because one polytope vertex may occur at several distinct
+        positions in an unfolding after cuts are made.
+
+        The permitted isometry is
+
+            x -> x @ Q + t
+
+        where Q is any orthogonal 3x3 matrix. Thus rotations, reflections,
+        and translations are all allowed.
         """
-
-        vertices_a = self.mesh_vertices_array(tol)
-        vertices_b = other.mesh_vertices_array(tol)
-
-        if len(vertices_a) != len(vertices_b):
+        if not isinstance(other, Unfolding):
             return False
 
-        if len(vertices_a) == 0:
+        if tol < 0.0:
+            raise ValueError("tol must be non-negative.")
+
+        def occurrence_map(
+            unfolding: "Unfolding",
+        ) -> dict[tuple[int, int], FloatArray]:
+            occurrences: dict[tuple[int, int], FloatArray] = {}
+
+            for cell_id, placement in unfolding.placements.items():
+                coordinates = np.asarray(
+                    placement.coordinates,
+                    dtype=np.float64,
+                )
+
+                expected_shape = (len(placement.vertex_ids), 3)
+                if coordinates.shape != expected_shape:
+                    raise ValueError(
+                        f"Cell {cell_id} has coordinate shape "
+                        f"{coordinates.shape}; expected {expected_shape}."
+                    )
+
+                for index, vertex_id in enumerate(placement.vertex_ids):
+                    key = (cell_id, vertex_id)
+
+                    if key in occurrences:
+                        raise ValueError(
+                            f"Cell {cell_id} contains duplicate vertex "
+                            f"{vertex_id}."
+                        )
+
+                    occurrences[key] = coordinates[index]
+
+            return occurrences
+
+        source_map = occurrence_map(self)
+        target_map = occurrence_map(other)
+
+        # The same cell-vertex occurrences must be present in both nets.
+        if source_map.keys() != target_map.keys():
+            return False
+
+        if not source_map:
             return True
 
-        cloud_a = vertices_a - vertices_a.mean(axis=0)
-        cloud_b = vertices_b - vertices_b.mean(axis=0)
+        occurrence_keys = sorted(source_map)
 
-        canonical_a = self._canonical_cloud(cloud_a)
-        canonical_b = self._canonical_cloud(cloud_b)
-
-        return np.allclose(
-            canonical_a,
-            canonical_b,
-            atol=tol,
-            rtol=0.0,
+        source = np.vstack(
+            [source_map[key] for key in occurrence_keys]
         )
+        target = np.vstack(
+            [target_map[key] for key in occurrence_keys]
+        )
+
+        if not np.all(np.isfinite(source)):
+            return False
+        if not np.all(np.isfinite(target)):
+            return False
+
+        # Remove translation.
+        source_centroid = source.mean(axis=0)
+        target_centroid = target.mean(axis=0)
+
+        source_centered = source - source_centroid
+        target_centered = target - target_centroid
+
+        # Orthogonal Procrustes problem:
+        #
+        #     minimize ||source_centered @ Q - target_centered||
+        #
+        # over every orthogonal matrix Q.
+        covariance = source_centered.T @ target_centered
+        left, _, right_transpose = np.linalg.svd(covariance)
+
+        orthogonal = left @ right_transpose
+
+        # Do not perform the usual determinant correction here. Such a
+        # correction would forbid reflections by forcing det(Q) = +1.
+        aligned = source_centered @ orthogonal
+
+        errors = np.linalg.norm(
+            aligned - target_centered,
+            axis=1,
+        )
+        maximum_error = float(np.max(errors))
+
+        # Interpret tol relative to the geometric size of the unfolding,
+        # while retaining an absolute tolerance for small coordinates.
+        source_radius = float(
+            np.max(np.linalg.norm(source_centered, axis=1))
+        )
+        target_radius = float(
+            np.max(np.linalg.norm(target_centered, axis=1))
+        )
+        scale = max(1.0, source_radius, target_radius)
+
+        return maximum_error <= tol * scale
