@@ -71,15 +71,19 @@ def plot_unfolding(
     show_cell_ids: bool = True,
     face_opacity: float = 0.28,
     hide_internal_faces: bool = False,
+    exploded_view: bool = False,
+    explosion_factor: float = 1.15,
     window_size: tuple[int, int] = (1200, 900),
     off_screen: bool = False,
 ) -> pv.Plotter:
     """
     Create an interactive PyVista plot of the unfolded 3-cells.
 
-    The function returns the plotter without opening the window, so call
-    ``plotter.show()`` yourself. Set ``off_screen=True`` for screenshots or
-    headless rendering.
+    With ``exploded_view=True``, cell centroids are scaled away from the
+    center of the unfolding while preserving each cell's orientation.
+
+    ``explosion_factor=1.0`` leaves the cells unchanged. Values greater than
+    one move the cells farther apart.
     """
     plotter = pv.Plotter(
         window_size=window_size,
@@ -99,17 +103,37 @@ def plot_unfolding(
         "#BAB0AC",
     )
 
+    cell_centroids = {
+        cell_id: placement.coordinates.mean(axis=0)
+        for cell_id, placement in unfolding.placements.items()
+    }
+
+    unfolding_center = np.mean(
+        np.vstack(list(cell_centroids.values())),
+        axis=0,
+    )
+
     label_points: list[FloatArray] = []
     labels: list[str] = []
 
     for cell_id in sorted(unfolding.placements):
         placement = unfolding.placements[cell_id]
+
         mesh = _cell_surface_mesh(
             polytope,
             unfolding,
             cell_id,
             hide_internal_faces=hide_internal_faces,
         )
+
+        offset = np.zeros(3, dtype=np.float64)
+
+        if exploded_view:
+            offset = (
+                explosion_factor - 1.0
+            ) * (cell_centroids[cell_id] - unfolding_center)
+
+            mesh.translate(offset, inplace=True)
 
         plotter.add_mesh(
             mesh,
@@ -122,7 +146,7 @@ def plot_unfolding(
         )
 
         if show_cell_ids:
-            label_points.append(placement.coordinates.mean(axis=0))
+            label_points.append(cell_centroids[cell_id] + offset)
             labels.append(str(cell_id))
 
     if show_cell_ids and label_points:
@@ -137,8 +161,12 @@ def plot_unfolding(
             name="cell-labels",
         )
 
+    title = "Spanning-tree unfolding"
+    if exploded_view:
+        title += " — exploded view"
+
     plotter.add_axes()
-    plotter.add_text("Spanning-tree unfolding", font_size=12)
+    plotter.add_text(title, font_size=12)
     plotter.view_isometric()
     plotter.reset_camera()
 

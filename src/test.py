@@ -1,32 +1,25 @@
-import time
 import utils
-from unfolding_plotting import geometry_generator
-from unfolding_plotting import unfolding_plotter
+from unfolding_plotting import unfolding_plotter, geometry_generator
 
-if __name__ == "__main__":
-    polytope1, spanning_tree1 = utils.load_single_polytope_unfolding(utils.DATA / "tesseract.jsonl", 2)
-    polytope2, spanning_tree2 = utils.load_single_polytope_unfolding(utils.DATA / "tesseract.jsonl", 1)
-    dual1 = polytope1.dual_graph()
-    dual2 = polytope2.dual_graph()
+polytope, spanning_tree = utils.load_single_polytope_unfolding(utils.DATA / "tetrahedral-prism.jsonl", 0)
+unfolding = geometry_generator.unfold_polytope(
+                polytope=polytope,
+                tree=spanning_tree,
+                root=0,
+                )
+plotter = unfolding_plotter.plot_unfolding(polytope, unfolding, face_opacity=1, show_cell_ids=False, exploded_view=True, explosion_factor=1.5)
 
+def save_screenshot():
+    filename = "net_render4.png"
 
-    unfolding1 = geometry_generator.unfold_polytope(
-        polytope=polytope1,
-        tree=spanning_tree1,
-        root=0,
+    plotter.screenshot(
+        filename,
+        transparent_background=True,
     )
 
-    unfolding2 = geometry_generator.unfold_polytope(
-        polytope=polytope2,
-        tree=spanning_tree2,
-        root=0,
-    )
+    print(f"Saved {filename}")
+    print("Camera position:", plotter.camera_position)
 
-    start = time.perf_counter_ns()
+plotter.add_key_event("p", save_screenshot)
 
-    print(unfolding1.is_congruent_to(unfolding2))
-
-    print(time.perf_counter_ns() - start)
-
-    # plotter = unfolding_plotter.plot_unfolding(polytope, unfolding, face_opacity=1.0)
-    # plotter.show()
+plotter.show()
