@@ -1,7 +1,7 @@
 import utils
 from unfolding_plotting import unfolding_plotter, geometry_generator
 
-polytope, spanning_tree = utils.load_single_polytope_unfolding(utils.DATA / "tetrahedral-prism.jsonl", 0)
+polytope, spanning_tree = utils.load_single_polytope_unfolding(utils.DATA / "rectified-5-cell.jsonl", 0)
 unfolding = geometry_generator.unfold_polytope(
                 polytope=polytope,
                 tree=spanning_tree,
