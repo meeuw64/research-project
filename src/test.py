@@ -6,6 +6,7 @@ from pathlib import Path
 
 import networkx as nx
 
+# Source for the johnson solids: https://zenodo.org/records/10729583
 def read_dual_graphs_from_json_files(
     input_directory: str | Path = utils.DATA / "johnson_solids_dual_graphs",
 ) -> dict[int, nx.Graph]:
@@ -68,6 +69,7 @@ def read_dual_graphs_from_json_files(
 
     return dict(sorted(duals.items()))
 
+# Source: Wikipedia
 johnson_symmetry_order = {
      1: 8,   2: 10,  3: 6,   4: 8,   5: 10,  6: 10,
      7: 6,   8: 8,   9: 10, 10: 8,  11: 10, 12: 12,
