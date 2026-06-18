@@ -62,7 +62,6 @@ def _cell_surface_mesh(
     polytope: Polytope,
     unfolding: Unfolding,
     cell_id: int,
-    internal_ridges: set[int],
 ) -> pv.PolyData:
     """
     Build a polygonal surface mesh for one unfolded 3-cell.
@@ -83,8 +82,6 @@ def _cell_surface_mesh(
     ridge_ids: list[int] = []
 
     for ridge_id in polytope.cells[cell_id].ridges:
-        if ridge_id in internal_ridges:
-            continue
 
         ridge = polytope.ridges[ridge_id]
 
