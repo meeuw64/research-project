@@ -1,11 +1,11 @@
-import time
 import utils
 from unfolding_plotting import geometry_generator
 from unfolding_plotting import unfolding_plotter
 
 if __name__ == "__main__":
-    polytope1, spanning_tree1 = utils.load_single_polytope_unfolding(utils.DATA / "tesseract.jsonl", 2)
-    polytope2, spanning_tree2 = utils.load_single_polytope_unfolding(utils.DATA / "tesseract.jsonl", 1)
+    polytope_name = "tesseract"
+    polytope1, spanning_tree1 = utils.load_single_polytope_unfolding(utils.DATA / (polytope_name + ".jsonl"), 5)
+    polytope2, spanning_tree2 = utils.load_single_polytope_unfolding(utils.DATA / (polytope_name + ".jsonl"), 164)
     dual1 = polytope1.dual_graph()
     dual2 = polytope2.dual_graph()
 
@@ -22,11 +22,7 @@ if __name__ == "__main__":
         root=0,
     )
 
-    start = time.perf_counter_ns()
-
-    print(unfolding1.is_congruent_to(unfolding2))
-
-    print(time.perf_counter_ns() - start)
-
-    # plotter = unfolding_plotter.plot_unfolding(polytope, unfolding, face_opacity=1.0)
-    # plotter.show()
+    plotter = unfolding_plotter.plot_unfolding(polytope1, unfolding1, face_opacity=1.0)
+    plotter.show()
+    plotter = unfolding_plotter.plot_unfolding(polytope2, unfolding2, face_opacity=1.0)
+    plotter.show()

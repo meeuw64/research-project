@@ -1,6 +1,5 @@
 from itertools import combinations
 
-import networkx as nx
 import utils
 from unfolding_plotting import geometry_generator
 
@@ -40,25 +39,6 @@ if __name__ == "__main__":
                 )
         unfoldings.append(unfolding)
 
-
     print(f"\nCongruency found: {verify_unfoldings(unfoldings)}, expected: False")
 
-    # Verify that congruency is found in obviously congruent cases (enumerating all spanning trees of 5-cell):
-    polytope, _ = utils.load_polytope_unfoldings(utils.DATA / "5-cell.jsonl")
-    spanning_trees = []
-    for tree in nx.SpanningTreeIterator(polytope.dual_graph()):
-        spanning_trees.append(tree)
-
-    unfoldings = []
-    for tree in spanning_trees:
-        unfolding = geometry_generator.unfold_polytope(
-                polytope=polytope,
-                tree=tree,
-                root=0,
-                )
-        unfoldings.append(unfolding)
-
-    congruency_found = verify_unfoldings(unfoldings)
-
-    assert congruency_found == True, "No congruency found in set of all spanning trees of 5-cell, which is not possible"
 

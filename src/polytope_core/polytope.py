@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import networkx as nx
 from numpy.typing import NDArray
 import numpy as np
+import hashlib
 
 FloatArray = NDArray[np.float64]
 
@@ -107,121 +108,132 @@ class Unfolding:
     hinge_ridge: dict[int, int | None]
 
     def is_congruent_to(
-        self,
-        other: "Unfolding",
-        tol: float = 1e-8,
+            self,
+            other: "Unfolding",
+            tol: float = 1e-8,
     ) -> bool:
         """
-        Return whether one global Euclidean isometry maps this unfolding
-        onto ``other``.
+        Fast congruence fingerprint for two unfoldings.
 
-        Correspondence is determined by ``(cell_id, vertex_id)``. This is
-        important because one polytope vertex may occur at several distinct
-        positions in an unfolding after cuts are made.
+        This method collects every placed
+        cell-local vertex copy, computes all pairwise distances, sorts them,
+        and compares the resulting distance spectra.
 
-        The permitted isometry is
+        Translation, rotation, and reflection do not change pairwise distances.
 
-            x -> x @ Q + t
-
-        where Q is any orthogonal 3x3 matrix. Thus rotations, reflections,
-        and translations are all allowed.
+        The distance spectrum is cached on each Unfolding object, so repeated
+        pairwise comparisons are much faster.
         """
-        if not isinstance(other, Unfolding):
-            return False
 
         if tol < 0.0:
             raise ValueError("tol must be non-negative.")
 
-        def occurrence_map(
-            unfolding: "Unfolding",
-        ) -> dict[tuple[int, int], FloatArray]:
-            occurrences: dict[tuple[int, int], FloatArray] = {}
+        if len(self.placements) != len(other.placements):
+            return False
 
-            for cell_id, placement in unfolding.placements.items():
-                coordinates = np.asarray(
-                    placement.coordinates,
-                    dtype=np.float64,
+        def all_points(unfolding):
+            point_blocks = []
+
+            for placement in unfolding.placements.values():
+                coordinates = np.asarray(placement.coordinates, dtype=np.float64)
+
+                if coordinates.ndim != 2 or coordinates.shape[1] != 3:
+                    return None
+
+                if not np.all(np.isfinite(coordinates)):
+                    return None
+
+                point_blocks.append(coordinates)
+
+            if not point_blocks:
+                return np.empty((0, 3), dtype=np.float64)
+
+            return np.vstack(point_blocks)
+
+        def cache_key(points):
+            contiguous = np.ascontiguousarray(points, dtype=np.float64)
+            digest = hashlib.blake2b(
+                contiguous.view(np.uint8),
+                digest_size=16,
+            ).digest()
+
+            return (
+                contiguous.shape,
+                contiguous.dtype.str,
+                digest,
+            )
+
+        def distance_spectrum(unfolding):
+            points = all_points(unfolding)
+
+            if points is None:
+                return None, None
+
+            key = cache_key(points)
+
+            cached = getattr(unfolding, "_congruence_distance_spectrum_cache", None)
+
+            if cached is not None:
+                cached_key, cached_spectrum = cached
+
+                if cached_key == key:
+                    return points, cached_spectrum
+
+            n = len(points)
+
+            if n < 2:
+                spectrum = np.empty(0, dtype=np.float64)
+            else:
+                # Squared pairwise distances using a Gram matrix:
+                #
+                # ||a - b||^2 = ||a||^2 + ||b||^2 - 2 a.b
+                #
+                # This avoids a Python loop over all pairs.
+                squared_norms = np.einsum("ij,ij->i", points, points)
+                squared_distances = (
+                        squared_norms[:, np.newaxis]
+                        + squared_norms[np.newaxis, :]
+                        - 2.0 * points @ points.T
                 )
 
-                expected_shape = (len(placement.vertex_ids), 3)
-                if coordinates.shape != expected_shape:
-                    raise ValueError(
-                        f"Cell {cell_id} has coordinate shape "
-                        f"{coordinates.shape}; expected {expected_shape}."
-                    )
+                # Numerical roundoff can create tiny negative values.
+                np.maximum(squared_distances, 0.0, out=squared_distances)
 
-                for index, vertex_id in enumerate(placement.vertex_ids):
-                    key = (cell_id, vertex_id)
+                upper_i, upper_j = np.triu_indices(n, k=1)
+                spectrum = np.sqrt(squared_distances[upper_i, upper_j])
+                spectrum.sort()
 
-                    if key in occurrences:
-                        raise ValueError(
-                            f"Cell {cell_id} contains duplicate vertex "
-                            f"{vertex_id}."
-                        )
+            setattr(
+                unfolding,
+                "_congruence_distance_spectrum_cache",
+                (key, spectrum),
+            )
 
-                    occurrences[key] = coordinates[index]
+            return points, spectrum
 
-            return occurrences
+        points_a, spectrum_a = distance_spectrum(self)
+        points_b, spectrum_b = distance_spectrum(other)
 
-        source_map = occurrence_map(self)
-        target_map = occurrence_map(other)
-
-        # The same cell-vertex occurrences must be present in both nets.
-        if source_map.keys() != target_map.keys():
+        if points_a is None or points_b is None:
             return False
 
-        if not source_map:
-            return True
-
-        occurrence_keys = sorted(source_map)
-
-        source = np.vstack(
-            [source_map[key] for key in occurrence_keys]
-        )
-        target = np.vstack(
-            [target_map[key] for key in occurrence_keys]
-        )
-
-        if not np.all(np.isfinite(source)):
-            return False
-        if not np.all(np.isfinite(target)):
+        if points_a.shape != points_b.shape:
             return False
 
-        # Remove translation.
-        source_centroid = source.mean(axis=0)
-        target_centroid = target.mean(axis=0)
+        if spectrum_a.shape != spectrum_b.shape:
+            return False
 
-        source_centered = source - source_centroid
-        target_centered = target - target_centroid
-
-        # Orthogonal Procrustes problem:
-        #
-        #     minimize ||source_centered @ Q - target_centered||
-        #
-        # over every orthogonal matrix Q.
-        covariance = source_centered.T @ target_centered
-        left, _, right_transpose = np.linalg.svd(covariance)
-
-        orthogonal = left @ right_transpose
-
-        # Do not perform the usual determinant correction here. Such a
-        # correction would forbid reflections by forcing det(Q) = +1.
-        aligned = source_centered @ orthogonal
-
-        errors = np.linalg.norm(
-            aligned - target_centered,
-            axis=1,
+        scale = max(
+            1.0,
+            float(spectrum_a[-1]) if spectrum_a.size else 1.0,
+            float(spectrum_b[-1]) if spectrum_b.size else 1.0,
         )
-        maximum_error = float(np.max(errors))
 
-        # Interpret tol relative to the geometric size of the unfolding,
-        # while retaining an absolute tolerance for small coordinates.
-        source_radius = float(
-            np.max(np.linalg.norm(source_centered, axis=1))
+        return bool(
+            np.allclose(
+                spectrum_a,
+                spectrum_b,
+                rtol=tol,
+                atol=tol * scale,
+            )
         )
-        target_radius = float(
-            np.max(np.linalg.norm(target_centered, axis=1))
-        )
-        scale = max(1.0, source_radius, target_radius)
-
-        return maximum_error <= tol * scale
