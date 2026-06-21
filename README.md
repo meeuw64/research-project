@@ -1,5 +1,8 @@
 # Research Project – 4D Polytope Unfoldings
 
+This repository links to the work of students for the Research project course of the CSE bachelor at TU Delft of graduation year 2026.
+Please see their projects [here](https://cse3000-research-project.github.io/).
+
 This project explores graph-based methods for studying all unfoldings (nets) of convex 4-polytopes, with a focus on regular examples such as the tesseract and the 16-cell.
 
 The main idea is to represent a 4-polytope by its dual graph, where:
