@@ -10,20 +10,42 @@ from polytope_core.polytope import *
 
 _COLOR_PALETTE = np.asarray(
     [
-        [230, 25, 75],    # red
-        [60, 180, 75],    # green
-        [0, 130, 200],    # blue
-        [245, 130, 48],   # orange
-        [145, 30, 180],   # purple
-        [70, 240, 240],   # cyan
-        [240, 50, 230],   # magenta
-        [210, 245, 60],   # lime
-        [250, 190, 190],  # pink
-        [0, 128, 128],    # dark teal
-        [230, 190, 255],  # lavender
-        [170, 110, 40],   # brown
-        [128, 0, 0],      # maroon
-        [128, 128, 0],    # olive
+        [230, 25, 75],     # red
+        [60, 180, 75],     # green
+        [0, 130, 200],     # blue
+        [245, 130, 48],    # orange
+        [145, 30, 180],    # purple
+        [70, 240, 240],    # cyan
+        [240, 50, 230],    # magenta
+        [210, 245, 60],    # lime
+        [250, 190, 190],   # pink
+        [0, 128, 128],     # dark teal
+        [230, 190, 255],   # lavender
+        [170, 110, 40],    # brown
+        [128, 0, 0],       # maroon
+        [128, 128, 0],     # olive
+
+        # Added distinct colors
+        [255, 225, 25],    # yellow
+        [0, 0, 128],       # navy
+        [128, 128, 128],   # gray
+        [0, 0, 0],         # black
+        [255, 215, 180],   # peach
+        [0, 100, 0],       # dark green
+        [255, 140, 0],     # dark orange
+        [75, 0, 130],      # indigo
+        [255, 105, 180],   # hot pink
+        [100, 149, 237],   # cornflower blue
+        [154, 205, 50],    # yellow green
+        [139, 69, 19],     # saddle brown
+        [47, 79, 79],      # dark slate gray
+        [255, 20, 147],    # deep pink
+        [0, 191, 255],     # deep sky blue
+        [218, 165, 32],    # goldenrod
+        [199, 21, 133],    # medium violet red
+        [112, 128, 144],   # slate gray
+        [124, 252, 0],     # lawn green
+        [25, 25, 112],     # midnight blue
     ],
     dtype=np.uint8,
 )
