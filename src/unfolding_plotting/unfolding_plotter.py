@@ -1,8 +1,32 @@
 from __future__ import annotations
 
-import colorsys
 import pyvista as pv
 from polytope_core.polytope import *
+
+
+# ---------------------------------------------------------------------------
+# Color palette
+# ---------------------------------------------------------------------------
+
+_COLOR_PALETTE = np.asarray(
+    [
+        [230, 25, 75],    # red
+        [60, 180, 75],    # green
+        [0, 130, 200],    # blue
+        [245, 130, 48],   # orange
+        [145, 30, 180],   # purple
+        [70, 240, 240],   # cyan
+        [240, 50, 230],   # magenta
+        [210, 245, 60],   # lime
+        [250, 190, 190],  # pink
+        [0, 128, 128],    # dark teal
+        [230, 190, 255],  # lavender
+        [170, 110, 40],   # brown
+        [128, 0, 0],      # maroon
+        [128, 128, 0],    # olive
+    ],
+    dtype=np.uint8,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -24,25 +48,27 @@ def _cyclic_polygon_indices(points: FloatArray) -> NDArray[np.int64]:
     return np.argsort(angles).astype(np.int64)
 
 
-def _ridge_rgb(ridge_id: int) -> NDArray[np.uint8]:
+def _build_ridge_color_map(
+    polytope: Polytope,
+) -> dict[int, NDArray[np.uint8]]:
     """
-    Return a deterministic RGB color for a ridge.
+    Assign a unique color to every ridge.
 
-    The golden-ratio hue spacing distributes consecutive ridge colors
-    reasonably evenly around the color wheel.
+    This assumes ridge IDs are list indices into polytope.ridges.
     """
-    golden_ratio = 0.6180339887498949
-    hue = (0.08 + ridge_id * golden_ratio) % 1.0
+    n_ridges = len(polytope.ridges)
 
-    red, green, blue = colorsys.hsv_to_rgb(
-        hue,
-        0.62,
-        0.92,
-    )
+    if n_ridges > len(_COLOR_PALETTE):
+        raise ValueError(
+            f"Polytope contains {n_ridges} ridges, "
+            f"but palette only contains {len(_COLOR_PALETTE)} colors. "
+            "Add more colors to _COLOR_PALETTE or switch to a generated palette."
+        )
 
-    return np.rint(
-        255.0 * np.asarray([red, green, blue])
-    ).astype(np.uint8)
+    return {
+        ridge_id: _COLOR_PALETTE[ridge_id].copy()
+        for ridge_id in range(n_ridges)
+    }
 
 
 def _tree_ridge_ids(
@@ -62,6 +88,7 @@ def _cell_surface_mesh(
     polytope: Polytope,
     unfolding: Unfolding,
     cell_id: int,
+    ridge_colors: dict[int, NDArray[np.uint8]],
 ) -> pv.PolyData:
     """
     Build a polygonal surface mesh for one unfolded 3-cell.
@@ -82,7 +109,6 @@ def _cell_surface_mesh(
     ridge_ids: list[int] = []
 
     for ridge_id in polytope.cells[cell_id].ridges:
-
         ridge = polytope.ridges[ridge_id]
 
         ridge_indices = np.asarray(
@@ -100,7 +126,7 @@ def _cell_surface_mesh(
         faces.append(len(ordered_indices))
         faces.extend(int(index) for index in ordered_indices)
 
-        face_colors.append(_ridge_rgb(ridge_id))
+        face_colors.append(ridge_colors[ridge_id])
         ridge_ids.append(ridge_id)
 
     mesh = pv.PolyData(
@@ -138,10 +164,6 @@ def plot_unfolding(
     matching colors indicate which faces are paired when the polytope is
     glued back together.
 
-    With ``hide_internal_faces=True``, faces corresponding to the hinges
-    in the unfolding tree are hidden. The remaining matching face pairs
-    are precisely the cut ridges.
-
     With ``exploded_view=True``, cell centroids are scaled away from the
     center of the unfolding while preserving each cell's orientation.
 
@@ -153,6 +175,8 @@ def plot_unfolding(
         off_screen=off_screen,
     )
 
+    ridge_colors = _build_ridge_color_map(polytope)
+
     cell_centroids = {
         cell_id: placement.coordinates.mean(axis=0)
         for cell_id, placement in unfolding.placements.items()
@@ -163,7 +187,6 @@ def plot_unfolding(
         axis=0,
     )
 
-
     label_points: list[FloatArray] = []
     labels: list[str] = []
 
@@ -172,6 +195,7 @@ def plot_unfolding(
             polytope=polytope,
             unfolding=unfolding,
             cell_id=cell_id,
+            ridge_colors=ridge_colors,
         )
 
         offset = np.zeros(3, dtype=np.float64)
@@ -196,12 +220,11 @@ def plot_unfolding(
                 line_width=2.0,
                 show_scalar_bar=False,
                 name=f"cell-{cell_id}",
+                lighting=False,
             )
 
         if show_cell_ids:
-            label_points.append(
-                cell_centroids[cell_id] + offset
-            )
+            label_points.append(cell_centroids[cell_id] + offset)
             labels.append(str(cell_id))
 
     if show_cell_ids and label_points:
