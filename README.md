@@ -64,8 +64,8 @@ python main.py --polytope tetrahedral-prism --save-trees
 # Save representatives to data/my-run.jsonl
 python main.py --polytope tetrahedral-prism --save-trees my-run
 
-# Render a saved unfolding with index i
-python main.py --render tesseract.jsonl 0
+# Render a saved unfolding with index 84
+python main.py --render tesseract.jsonl 84
 
 # General form
 python main.py --polytope <POLYTOPE_NAME> [--info] [--save-trees [FILE_NAME]]
