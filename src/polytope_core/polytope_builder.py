@@ -658,82 +658,6 @@ class PolytopeBuilder:
             cells=cells,
         )
 
-    @staticmethod
-    def build_decachoron() -> Polytope:
-        verts5 = np.asarray(
-            sorted(set(permutations((0, 0, 1, 2, 2)))),
-            dtype=float,
-        )
-
-        vertices = project_to_R4(verts5)
-
-        cells_vertices: list[tuple[int, ...]] = []
-
-        for coordinate in range(5):
-            cells_vertices.append(
-                tuple(
-                    vertex_id
-                    for vertex_id, vertex in enumerate(verts5)
-                    if vertex[coordinate] == 0
-                )
-            )
-
-        for coordinate in range(5):
-            cells_vertices.append(
-                tuple(
-                    vertex_id
-                    for vertex_id, vertex in enumerate(verts5)
-                    if vertex[coordinate] == 2
-                )
-            )
-
-        ridges: list[Ridge] = []
-        cell_ridges: list[list[int]] = [
-            [] for _ in cells_vertices
-        ]
-
-        for cell_a, cell_b in combinations(
-            range(len(cells_vertices)), 2
-        ):
-            intersection = tuple(
-                sorted(
-                    set(cells_vertices[cell_a])
-                    & set(cells_vertices[cell_b])
-                )
-            )
-
-            if len(intersection) not in (3, 6):
-                continue
-
-            ridge_id = len(ridges)
-
-            ridges.append(
-                Ridge(
-                    vertices=intersection,
-                    incident_cells=(cell_a, cell_b),
-                )
-            )
-
-            cell_ridges[cell_a].append(ridge_id)
-            cell_ridges[cell_b].append(ridge_id)
-
-        cells = [
-            Cell(
-                vertices=tuple(sorted(vertex_ids)),
-                ridges=tuple(sorted(ridge_ids)),
-            )
-            for vertex_ids, ridge_ids in zip(
-                cells_vertices,
-                cell_ridges,
-            )
-        ]
-
-        return Polytope(
-            vertices=vertices,
-            ridges=ridges,
-            cells=cells,
-        )
-
 
 POLYTOPE_NAME_MAP = {
     "5-cell" : PolytopeBuilder.build_5_cell(),
@@ -741,7 +665,6 @@ POLYTOPE_NAME_MAP = {
     "16-cell" : PolytopeBuilder.build_16_cell(),
     "rectified-5-cell" : PolytopeBuilder.build_rectified_5_cell(),
     "truncated-5-cell" : PolytopeBuilder.build_truncated_5_cell(),
-    "decachoron" : PolytopeBuilder.build_decachoron(),
     "tetrahedral-prism" : PolytopeBuilder.build_tetrahedral_prism(),
     "octahedral-prism" : PolytopeBuilder.build_octahedral_prism()
 }
