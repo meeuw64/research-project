@@ -1,15 +1,24 @@
 # Enumeration of Ridge Unfoldings of 4-Polytopes
 
+This repository links to the work of students for the Research project course of the CSE bachelor at TU Delft of graduation year 2026.
+Please see their projects [here](https://cse3000-research-project.github.io/).
+
 Python implementation for enumerating symmetry-inequivalent ridge unfoldings of selected regular and semiregular 4-polytopes.
 
 Each unfolding is represented as a spanning tree of the polytope's dual graph. Symmetry-equivalent trees are removed using graph automorphisms, and the remaining representatives can be saved, embedded, and visualized in 3D.
 
 ## Features
 
-* build supported 4-polytopes and their dual graphs
-* enumerate unfolding up to symmetry
+* build dual graph from given 4-polytope data
+* enumerate unfoldings up to symmetry
 * save unfoldings as `.jsonl` files
 * embed and visualize selected unfoldings in 3D
+
+## Example Unfolding of Tesseract
+
+![Tesseract unfolding](images/tesseract-net.png)
+
+Faces that were shared in the original tesseract were given the same color. 
 
 ## Installation
 
