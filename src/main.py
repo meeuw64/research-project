@@ -70,7 +70,8 @@ if __name__ == "__main__":
             unfolding,
             show_cell_ids=False,
             face_opacity=1.0,
-            hide_internal_faces=False,
+            exploded_view=False,
+            explosion_factor=1.0,
         )
         plotter.show()
         sys.exit(0)

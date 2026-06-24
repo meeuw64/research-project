@@ -102,6 +102,8 @@ This project enumerates ridge unfoldings, not necessarily overlap-free nets. An 
 
 The main computational bottleneck is exhaustive spanning-tree enumeration, so larger 4-polytopes such as the 24-cell, 120-cell, and 600-cell are outside the practical range of the current direct approach.
 
+Additional rendering parameters can be changed in `main.py`
+
 Custom polytopes can be added in `polytope_builder.py`
 
 ## Reference
